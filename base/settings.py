@@ -151,12 +151,12 @@ SWAGGER_SETTINGS = {
     }
 }
 
-# # Daphne
-# ASGI_APPLICATION = "base.asgi.application"
+# Daphne
+ASGI_APPLICATION = "base.asgi.application"
 
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels_redis.core.RedisChannelLayer",
-#         "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
-#     }
-# }
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
+    }
+}
