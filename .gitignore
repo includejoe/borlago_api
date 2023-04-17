@@ -1,0 +1,33 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+*.dll
+
+# Local development settings
+.env
+.env.*
+.local/
+sandbox.py
+db.sqlite3
+
+# Django generated files
+/staticfiles/
+/media/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE and editor specific files
+.vscode/
+
+# Package manager files
+pip-lock.txt
+
+# Miscellaneous
+*.DS_Store
+Thumbs.db
