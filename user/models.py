@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import (
@@ -57,8 +58,15 @@ class UserManager(BaseUserManager):
 
 
 # Create your models here.
+class CollectorUnit(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=255, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 class User(AbstractBaseUser, PermissionsMixin):
-    GENDER_CHOICES = (("Male", "Male"), ("Female", "Female"), ("Other", "Other"))
+    GENDER_CHOICES = (("male", "male"), ("female", "female"), ("other", "other"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=255, unique=True)
@@ -68,13 +76,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=128, default="+233")
     gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
     is_staff = models.BooleanField(default=False)
+    collector_unit = models.ForeignKey(
+        CollectorUnit,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="collectors",
+    )
     user_type = models.PositiveSmallIntegerField(
         default=2,
         validators=[
             MinValueValidator(1),
             MaxValueValidator(3),
         ],
-    )
+    )  # 1 -> Admin, 2 -> Normal User, 3 -> Collector
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -88,15 +103,24 @@ class User(AbstractBaseUser, PermissionsMixin):
         refresh = RefreshToken.for_user(self)
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
+    def clean(self):
+        if self.user_type != 3:
+            if self.collector_unit is not None:
+                raise ValidationError(
+                    {
+                        "collector_unit": "A user of type not equal to 3 can not belong to a collection unit"
+                    }
+                )
+
     class Meta:
         ordering = ["-created_at"]
 
 
-class PickUpLocation(models.Model):
+class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="pick_up_locations"
-    )
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="locations")
     picture = models.URLField(blank=False, null=False)
     name = models.CharField(max_length=1024, null=False, blank=False)
     address = models.CharField(max_length=1024)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

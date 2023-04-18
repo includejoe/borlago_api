@@ -12,19 +12,33 @@ class User(admin.ModelAdmin):
         "phone",
         "gender",
         "user_type",
+        "created_at",
     )
 
 
 admin.site.register(models.User, User)
 
 
-class PickUpLocation(admin.ModelAdmin):
+class Location(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
         "picture",
         "address",
+        "created_at",
     )
 
 
-admin.site.register(models.PickUpLocation, PickUpLocation)
+admin.site.register(models.Location, Location)
+
+
+class CollectorUnit(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "name",
+        "created_at",
+        "updated_at",
+    )
+
+
+admin.site.register(models.CollectorUnit, CollectorUnit)
