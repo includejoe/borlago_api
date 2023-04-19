@@ -104,13 +104,12 @@ class User(AbstractBaseUser, PermissionsMixin):
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
     def clean(self):
-        if self.user_type != 3:
-            if self.collector_unit is not None:
-                raise ValidationError(
-                    {
-                        "collector_unit": "A user of type not equal to 3 can not belong to a collection unit"
-                    }
-                )
+        if self.user_type != 3 and self.collector_unit is not None:
+            raise ValidationError(
+                {
+                    "collector_unit": "A user of type not equal to 3 can not belong to a collection unit"
+                }
+            )
 
     class Meta:
         ordering = ["-created_at"]
