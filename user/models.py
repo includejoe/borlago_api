@@ -90,6 +90,7 @@ class User(AbstractBaseUser, PermissionsMixin):
             MaxValueValidator(3),
         ],
     )  # 1 -> Admin, 2 -> Normal User, 3 -> Collector
+    is_deleted = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
