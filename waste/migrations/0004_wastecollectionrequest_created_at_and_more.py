@@ -6,38 +6,39 @@ import django.utils.timezone
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('payment', '0001_initial'),
-        ('user', '0008_collectorunit_created_at_collectorunit_updated_at_and_more'),
-        ('waste', '0003_delete_collectorunit_and_more'),
+        ("user", "0008_collectorunit_created_at_collectorunit_updated_at_and_more"),
+        ("waste", "0003_delete_collectorunit_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='wastecollectionrequest',
-            name='created_at',
-            field=models.DateTimeField(auto_now_add=True, default=django.utils.timezone.now),
+            model_name="wastecollectionrequest",
+            name="created_at",
+            field=models.DateTimeField(
+                auto_now_add=True, default=django.utils.timezone.now
+            ),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='wastecollectionrequest',
-            name='payment',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='wcr', to='payment.payment'),
-        ),
-        migrations.AddField(
-            model_name='wastecollectionrequest',
-            name='updated_at',
+            model_name="wastecollectionrequest",
+            name="updated_at",
             field=models.DateTimeField(auto_now=True),
         ),
         migrations.AlterField(
-            model_name='wastecollectionrequest',
-            name='collection_datetime',
+            model_name="wastecollectionrequest",
+            name="collection_datetime",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='wastecollectionrequest',
-            name='collector_unit',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='wcrs', to='user.collectorunit'),
+            model_name="wastecollectionrequest",
+            name="collector_unit",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="wcrs",
+                to="user.collectorunit",
+            ),
         ),
     ]

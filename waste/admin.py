@@ -16,3 +16,16 @@ class WasteCollectionRequest(admin.ModelAdmin):
 
 
 admin.site.register(models.WasteCollectionRequest, WasteCollectionRequest)
+
+
+class Payment(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "amount",
+        "transaction_id",
+        "status",
+        "created_at",
+    )
+
+
+admin.site.register(models.Payment, Payment)

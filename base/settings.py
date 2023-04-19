@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     "administrator",
     "authentication",
     "chat",
-    "payment",
     "user",
     "waste",
 ]
