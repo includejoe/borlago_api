@@ -61,6 +61,10 @@ class UserManager(BaseUserManager):
 class CollectorUnit(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255, unique=True)
+    country = models.CharField(max_length=24, unique=True, default="gh")
+    region = models.CharField(max_length=24, unique=True, default="ga")
+    latitude = models.CharField(max_length=255, null=True, blank=True)
+    longitude = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -76,8 +80,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=128, default="+233")
     gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
     is_staff = models.BooleanField(default=False)
-    latitude = models.CharField(max_length=255, null=True, blank=True)
-    longitude = models.CharField(max_length=255, null=True, blank=True)
     collector_unit = models.ForeignKey(
         CollectorUnit,
         on_delete=models.SET_NULL,

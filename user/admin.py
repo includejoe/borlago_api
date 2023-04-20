@@ -36,6 +36,10 @@ class CollectorUnit(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
+        "country",
+        "region",
+        "longitude",
+        "latitude",
         "created_at",
         "updated_at",
     )
