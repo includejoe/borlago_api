@@ -40,6 +40,7 @@ class CollectorUnit(admin.ModelAdmin):
         "region",
         "longitude",
         "latitude",
+        "available",
         "created_at",
         "updated_at",
     )

@@ -6,4 +6,4 @@ from .models import CollectorUnit
 class CollectorUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = CollectorUnit
-        exclude = ("collectors",)
+        fields = "__all__"

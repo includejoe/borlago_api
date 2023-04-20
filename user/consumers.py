@@ -11,12 +11,8 @@ from .serializers import CollectorUnitSerializer
 
 class UpdateCUnitLocationConsumer(WebsocketConsumer):
     def connect(self):
-        self.room_name = (
-            self.scope["url_route"]["kwargs"]["country"]
-            + "-"
-            + self.scope["url_route"]["kwargs"]["region"]
-        )
-        self.room_group_name = f"region/{self.room_name}"
+        self.room_name = "live-location"
+        self.room_group_name = f"c_unit_{self.room_name}"
 
         # Join room group
         async_to_sync(self.channel_layer.group_add)(
@@ -46,7 +42,9 @@ class UpdateCUnitLocationConsumer(WebsocketConsumer):
 
         c_unit_id = self.scope["url_route"]["kwargs"]["c_unit_id"]
 
-        c_unit = CollectorUnit.objects.filter(id=c_unit_id).update(**location_data)
+        CollectorUnit.objects.filter(id=c_unit_id).update(**location_data)
+        
+        c_unit = CollectorUnit.objects.get(id=c_unit_id)
 
         serializer = CollectorUnitSerializer(c_unit)
 

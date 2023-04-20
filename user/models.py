@@ -65,6 +65,7 @@ class CollectorUnit(models.Model):
     region = models.CharField(max_length=24, unique=True, default="ga")
     latitude = models.CharField(max_length=255, null=True, blank=True)
     longitude = models.CharField(max_length=255, null=True, blank=True)
+    available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
