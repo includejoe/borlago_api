@@ -4,7 +4,6 @@ from channels.generic.websocket import WebsocketConsumer
 
 from .models import CollectorUnit
 
-from .serializers import CollectorUnitSerializer
 
 # c_unit => CollectorUnit
 
@@ -39,17 +38,19 @@ class UpdateCUnitLocationConsumer(WebsocketConsumer):
     def update_location(self, event):
         location_data = event.copy()
         location_data.pop("type")
+        c_unit_id = location_data.pop("collector_unit", None)
 
-        c_unit_id = self.scope["url_route"]["kwargs"]["c_unit_id"]
-
-        CollectorUnit.objects.filter(id=c_unit_id).update(**location_data)
-        
-        c_unit = CollectorUnit.objects.get(id=c_unit_id)
-
-        serializer = CollectorUnitSerializer(c_unit)
-
-        # Send updated data to WebSocket
-        self.send(text_data=json.dumps(serializer.data))
+        if c_unit_id is not None:
+            if CollectorUnit.objects.filter(id=c_unit_id).exists():
+                CollectorUnit.objects.filter(id=c_unit_id).update(**location_data)
+                # Send Success Response to WebSocket
+                self.send(text_data=f"{c_unit_id} location updated")
+            else:
+                # Send Error Response to WebSocket
+                self.send(text_data="Invalid Collector Unit ID")
+        else:
+            # Send Error Response to WebSocket
+            self.send(text_data="collector_unit can not be null")
 
 
 update_c_unit_location_asgi = UpdateCUnitLocationConsumer.as_asgi()
