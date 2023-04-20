@@ -44,13 +44,13 @@ class UpdateCUnitLocationConsumer(WebsocketConsumer):
             if CollectorUnit.objects.filter(id=c_unit_id).exists():
                 CollectorUnit.objects.filter(id=c_unit_id).update(**location_data)
                 # Send Success Response to WebSocket
-                self.send(text_data=f"{c_unit_id} location updated")
+                self.send(text_data=f"success: {c_unit_id} location updated")
             else:
                 # Send Error Response to WebSocket
-                self.send(text_data="Invalid Collector Unit ID")
+                self.send(text_data="error: Invalid Collector Unit ID")
         else:
             # Send Error Response to WebSocket
-            self.send(text_data="collector_unit can not be null")
+            self.send(text_data="error: collector_unit can not be null")
 
 
 update_c_unit_location_asgi = UpdateCUnitLocationConsumer.as_asgi()
