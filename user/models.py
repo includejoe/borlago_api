@@ -76,6 +76,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=128, default="+233")
     gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
     is_staff = models.BooleanField(default=False)
+    latitude = models.CharField(max_length=255, null=True, blank=True)
+    longitude = models.CharField(max_length=255, null=True, blank=True)
     collector_unit = models.ForeignKey(
         CollectorUnit,
         on_delete=models.SET_NULL,
@@ -105,12 +107,25 @@ class User(AbstractBaseUser, PermissionsMixin):
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
     def clean(self):
-        if self.user_type != 3 and self.collector_unit is not None:
-            raise ValidationError(
-                {
-                    "collector_unit": "A user of type not equal to 3 can not belong to a collection unit"
-                }
-            )
+        if self.user_type != 3:
+            if self.collector_unit is not None:
+                raise ValidationError(
+                    {
+                        "collector_unit": "A user of type not equal to 3 can not belong to a collection unit"
+                    }
+                )
+            if self.longitude is not None:
+                raise ValidationError(
+                    {
+                        "longitude": "A user of type not equal to 3 can not have a longitude"
+                    }
+                )
+            if self.latitude is not None:
+                raise ValidationError(
+                    {
+                        "latitude": "A user of type not equal to 3 can not have a latitude"
+                    }
+                )
 
     class Meta:
         ordering = ["-created_at"]
@@ -122,5 +137,7 @@ class Location(models.Model):
     picture = models.URLField(blank=False, null=False)
     name = models.CharField(max_length=1024, null=False, blank=False)
     address = models.CharField(max_length=1024)
+    latitude = models.CharField(max_length=255)
+    longitude = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -29,7 +29,7 @@ class Payment(models.Model):
         if self.status == 2 and self.transaction_id is None:
             raise ValidationError(
                 {
-                    "transaction_id": "This field can not be null when the payment status is 2 ()"
+                    "transaction_id": "This field can not be null when the payment status is 2"
                 }
             )
 
@@ -42,7 +42,14 @@ class WasteCollectionRequest(models.Model):
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wcrs")
+    requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wcrs")
+    admin = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="wcrs_approved",
+        null=True,
+        blank=True,
+    )
     pick_up_location = models.ForeignKey(
         Location,
         on_delete=models.CASCADE,
