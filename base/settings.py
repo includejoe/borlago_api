@@ -73,7 +73,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "base.wsgi.application"
 
 
-# Database
+# Local Database
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
@@ -81,6 +81,17 @@ DATABASES = {
     }
 }
 
+# Remote Database
+# DATABASES = {
+#     "default": {
+#         "ENGINE": env("DATABASE_ENGINE"),
+#         "HOST": env("DATABASE_HOST"),
+#         "NAME": env("DATABASE_NAME"),
+#         "USER": env("DATABASE_USER"),
+#         "PASSWORD": env("DATABASE_PASSWORD"),
+#         "PORT": env("DATABASE_PORT"),
+#     }
+# }
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [

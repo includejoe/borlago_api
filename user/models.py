@@ -63,8 +63,18 @@ class CollectorUnit(models.Model):
     name = models.CharField(max_length=255, unique=True)
     country = models.CharField(max_length=24, unique=True, default="gh")
     region = models.CharField(max_length=24, unique=True, default="ga")
-    latitude = models.CharField(max_length=255, null=True, blank=True)
-    longitude = models.CharField(max_length=255, null=True, blank=True)
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
     available = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -78,7 +88,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128, blank=True)
     password = models.CharField(max_length=128)
-    phone = models.CharField(max_length=128, default="+233")
+    phone = models.CharField(max_length=128, default="233")
+    momo_number = models.CharField(max_length=128, null=True, blank=True)
     gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
     is_staff = models.BooleanField(default=False)
     collector_unit = models.ForeignKey(
@@ -117,18 +128,6 @@ class User(AbstractBaseUser, PermissionsMixin):
                         "collector_unit": "A user of type not equal to 3 can not belong to a collection unit"
                     }
                 )
-            if self.longitude is not None:
-                raise ValidationError(
-                    {
-                        "longitude": "A user of type not equal to 3 can not have a longitude"
-                    }
-                )
-            if self.latitude is not None:
-                raise ValidationError(
-                    {
-                        "latitude": "A user of type not equal to 3 can not have a latitude"
-                    }
-                )
 
     class Meta:
         ordering = ["-created_at"]
@@ -140,7 +139,7 @@ class Location(models.Model):
     picture = models.URLField(blank=False, null=False)
     name = models.CharField(max_length=1024, null=False, blank=False)
     address = models.CharField(max_length=1024)
-    latitude = models.CharField(max_length=255)
-    longitude = models.CharField(max_length=255)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
