@@ -54,6 +54,9 @@ class MakeWCRPaymentAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.PaymentSerializer
 
+    # TODO:  update WCR with assigned CU, payment & status
+    # TODO: return updated WCR and calculated collector distance from pickup location
+
     def create(self, request):
         data = request.data
         payer = request.user
@@ -95,16 +98,6 @@ class MakeWCRPaymentAPIView(generics.CreateAPIView):
             #     # Payment request successful
             #     transaction_id = "Sample Transaction ID"
             #     payment = Payment.objects.create(**data, transaction_id=transaction_id)
-            #     """
-            #         1. find the closest collector unit
-            #         (based on CU's longitude & latitude and WCR's pickup location
-            #         longitude & latitude)
-            #         2. check if CU is available
-            #         3. if CU is available; assign CU to WCR, else: restart from step 1
-            #         4. calculate the distance between CU and WCR pickup location in km
-            #         5. calculate the collection_datetime estimate
-            #         6. update WCR with assigned CU, collection_datetime, payment & status
-            #     """
 
             #     return Response(
             #         {"detail": "Payment Successful"},
