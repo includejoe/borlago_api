@@ -152,14 +152,14 @@ class GetCollectorUnitsAPIView(generics.ListAPIView):
 get_collector_units_view = GetCollectorUnitsAPIView.as_view()
 
 
-class CollectorDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class CollectorDetailAPIView(generics.RetrieveUpdateAPIView):
     pass
 
 
 collector_detail_view = CollectorDetailAPIView.as_view()
 
 
-class CollectorUnitDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+class CollectorUnitDetailAPIView(generics.RetrieveUpdateAPIView):
     pass
 
 
