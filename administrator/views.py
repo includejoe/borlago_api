@@ -6,7 +6,7 @@ from rest_framework.exceptions import APIException, ParseError
 
 from . import serializers
 from .utils import check_is_admin
-from user.models import CollectorUnit
+from user.models import CollectorUnit, User
 
 
 # Create your views here.
@@ -15,13 +15,10 @@ class CreateCollectorUnitAPIView(generics.CreateAPIView):
     serializer_class = serializers.CreateCollectorUnitSerializer
 
     def create(self, request):
-        is_admin = check_is_admin(request)
+        error_response = check_is_admin(request)
 
-        if not is_admin:
-            return Response(
-                {"detail": "You do not have permission to access this resource"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        if error_response is not None:
+            return error_response
 
         admin = request.user
         data = request.data
@@ -42,15 +39,33 @@ class AddCollectorToUnitAPIView(generics.UpdateAPIView):
 add_collector_to_unit_view = AddCollectorToUnitAPIView.as_view()
 
 
-class GetCollectorsAPIView(generics.RetrieveAPIView):
-    pass
+class GetCollectorsAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.CollectorSerializer
+    queryset = User.objects.filter(user_type=3)
+
+    def list(self, request, *args, **kwargs):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+        return super().list(request, *args, **kwargs)
 
 
 get_collectors_view = GetCollectorsAPIView.as_view()
 
 
-class GetCollectorUnitsAPIView(generics.RetrieveAPIView):
-    pass
+class GetCollectorUnitsAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.CollectorUnitSerializer
+    queryset = CollectorUnit.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+        return super().list(request, *args, **kwargs)
 
 
 get_collector_units_view = GetCollectorUnitsAPIView.as_view()
