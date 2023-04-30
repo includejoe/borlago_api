@@ -2,6 +2,7 @@ import environ
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
+from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 
 from . import serializers
@@ -115,6 +116,8 @@ class AddCollectorToUnitAPIView(generics.UpdateAPIView):
                 {"detail": "This collector unit does not exist"},
                 status=status.HTTP_404_NOT_FOUND,
             )
+        except Exception as e:
+            APIException(detail=e)
 
 
 add_collector_to_unit_view = AddCollectorToUnitAPIView.as_view()
@@ -153,14 +156,117 @@ get_collector_units_view = GetCollectorUnitsAPIView.as_view()
 
 
 class CollectorDetailAPIView(generics.RetrieveUpdateAPIView):
-    pass
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.CollectorSerializer
+
+    def retrieve(self, request, collector_id):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+
+        try:
+            collector = User.objects.get(id=collector_id)
+
+            if collector.user_type != 3:
+                return Response(
+                    {"detail": "This user is not a collector"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            serializer = self.serializer_class(collector)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "This collector does not exist"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            APIException(detail=e)
+
+    def patch(self, request, collector_id):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+
+        data = request.data
+
+        try:
+            collector = User.objects.get(id=collector_id)
+            serializer = self.serializer_class(
+                collector,
+                data=data,
+                partial=True,
+                context={"request": request},
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "This collector does not exist"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            APIException(detail=e)
 
 
 collector_detail_view = CollectorDetailAPIView.as_view()
 
 
 class CollectorUnitDetailAPIView(generics.RetrieveUpdateAPIView):
-    pass
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.CollectorUnitDetailSerializer
+
+    def retrieve(self, request, unit_id):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+
+        try:
+            unit = CollectorUnit.objects.get(id=unit_id)
+            serializer = self.serializer_class(unit)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except CollectorUnit.DoesNotExist:
+            return Response(
+                {"detail": "This collector unit does not exist"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            APIException(detail=e)
+
+    def patch(self, request, unit_id):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+
+        admin = request.user
+        data = {**request.data, "updated_by": admin.id}
+
+        try:
+            unit = CollectorUnit.objects.get(id=unit_id)
+            serializer = self.serializer_class(
+                unit,
+                data=data,
+                partial=True,
+                context={"request": request},
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except CollectorUnit.DoesNotExist:
+            return Response(
+                {"detail": "This collector unit does not exist"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            APIException(detail=e)
 
 
 collector_unit_detail_view = CollectorUnitDetailAPIView.as_view()

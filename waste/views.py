@@ -33,13 +33,18 @@ class CreateWCRAPIView(generics.CreateAPIView):
             data["pick_up_location"] = pick_up_location
 
             wcr = WasteCollectionRequest.objects.create(**data)
-            """ implement code to calculate payment amount based on wcr's
-                pickup location, waste quantity & waste type           
-            """
-            wcr_payment_amount = 3.26
+
+            if wcr.waste_type == "general":
+                payment_amount = wcr.waste_quantity * env("GENERAL_WASTE_RATE_PER_BAG")
+            elif wcr.waste_type == "organic":
+                payment_amount = wcr.waste_quantity * env("ORGANIC_WASTE_RATE_PER_BAG")
+            elif wcr.waste_type == "hazardous":
+                payment_amount = wcr.waste_quantity * env(
+                    "HAZARDOUS_WASTE_RATE_PER_BAG"
+                )
 
             return Response(
-                {"wcr": wcr.id, "amount_to_pay": wcr_payment_amount},
+                {"wcr": wcr.id, "amount_to_pay": payment_amount},
                 status=status.HTTP_201_CREATED,
             )
 

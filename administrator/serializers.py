@@ -29,7 +29,6 @@ class CollectorSerializer(ModelSerializer):
             "last_name",
             "phone",
             "gender",
-            "is_staff",
             "is_deleted",
             "is_verified",
             "is_suspended",
@@ -52,4 +51,4 @@ class CollectorUnitDetailSerializer(ModelSerializer):
         model = CollectorUnit
         fields = "__all__"
 
-        read_only_fields = ["id", "created_at", "name"]
+        read_only_fields = ["id", "created_at", "name", "collectors"]
