@@ -8,27 +8,56 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('waste', '0004_wastecollectionrequest_created_at_and_more'),
+        ("waste", "0004_wastecollectionrequest_created_at_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Payment',
+            name="Payment",
             fields=[
-                ('id', models.UUIDField(default=uuid.uuid4, editable=False, primary_key=True, serialize=False)),
-                ('amount', models.DecimalField(decimal_places=2, max_digits=15, null=True)),
-                ('transaction_id', models.CharField(blank=True, max_length=255, null=True)),
-                ('status', models.PositiveSmallIntegerField(default=1, validators=[django.core.validators.MinValueValidator(1), django.core.validators.MaxValueValidator(3)])),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('payer', models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, related_name='payments', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.UUIDField(
+                        default=uuid.uuid4,
+                        editable=False,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                (
+                    "amount",
+                    models.DecimalField(decimal_places=2, max_digits=15, null=True),
+                ),
+                (
+                    "transaction_id",
+                    models.CharField(blank=True, max_length=255, null=True),
+                ),
+                (
+                    "status",
+                    models.PositiveSmallIntegerField(
+                        default=1,
+                        validators=[
+                            django.core.validators.MinValueValidator(1),
+                            django.core.validators.MaxValueValidator(3),
+                        ],
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "payer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.DO_NOTHING,
+                        related_name="payments",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
-        migrations.AlterField(
-            model_name='wastecollectionrequest',
-            name='payment',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='wcr', to='waste.payment'),
-        ),
+        # migrations.AlterField(
+        #     model_name='wastecollectionrequest',
+        #     name='payment',
+        #     field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='wcr', to='waste.payment'),
+        # ),
     ]

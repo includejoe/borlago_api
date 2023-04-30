@@ -58,13 +58,6 @@ class UserManager(BaseUserManager):
 
 
 # Create your models here.
-class CollectorUnit(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    name = models.CharField(max_length=255, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
 class User(AbstractBaseUser, PermissionsMixin):
     GENDER_CHOICES = (("male", "male"), ("female", "female"), ("other", "other"))
 
@@ -73,11 +66,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     first_name = models.CharField(max_length=128)
     last_name = models.CharField(max_length=128, blank=True)
     password = models.CharField(max_length=128)
-    phone = models.CharField(max_length=128, default="+233")
+    phone = models.CharField(max_length=128, default="233")
+    momo_number = models.CharField(max_length=128, null=True, blank=True)
     gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
     is_staff = models.BooleanField(default=False)
     collector_unit = models.ForeignKey(
-        CollectorUnit,
+        "CollectorUnit",
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
@@ -91,6 +85,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         ],
     )  # 1 -> Admin, 2 -> Normal User, 3 -> Collector
     is_deleted = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=None, null=True, blank=True)
+    is_suspended = models.BooleanField(default=None, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -105,12 +101,97 @@ class User(AbstractBaseUser, PermissionsMixin):
         return {"refresh": str(refresh), "access": str(refresh.access_token)}
 
     def clean(self):
-        if self.user_type != 3 and self.collector_unit is not None:
-            raise ValidationError(
-                {
-                    "collector_unit": "A user of type not equal to 3 can not belong to a collection unit"
-                }
-            )
+        if self.user_type != 3:
+            if self.collector_unit is not None:
+                raise ValidationError(
+                    {
+                        "collector_unit": "A user of type not equal to 3(collector) can not belong to a collection unit"
+                    }
+                )
+            if self.is_verified is not None:
+                raise ValidationError(
+                    {
+                        "is_verified": "A user of type not equal to 3(collector) must have this field set to null"
+                    }
+                )
+            if self.is_suspended is not None:
+                raise ValidationError(
+                    {
+                        "is_suspended": "A user of type not equal to 3(collector) must have this field set to null"
+                    }
+                )
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class CollectorUnit(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(
+        max_length=10,
+        unique=True,
+        editable=False,
+        null=False,
+        blank=False,
+    )
+    country = models.CharField(max_length=24, default="gh")
+    region = models.CharField(max_length=24, default="ga")
+    latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+    longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        null=True,
+        blank=True,
+    )
+    created_by = models.ForeignKey(
+        "User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="collector_units_created",
+    )
+    updated_by = models.ForeignKey(
+        "User",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="collector_units_updated",
+    )
+    available = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Generate unique name
+    def save(self, *args, **kwargs):
+        last_instance = CollectorUnit.objects.all().order_by("-id").first()
+        if last_instance:
+            last_name = last_instance.name
+            if int(last_name[3:]) >= 9999:
+                last_alpha = chr(ord(last_name[2]) + 1)
+                new_name = f"CU{last_alpha}0001"
+            else:
+                new_name = f"CU{last_name[2:]}"
+                new_name = f"{new_name[:3]}{int(new_name[3:])+1:04d}"
+        else:
+            new_name = "CUA0001"
+
+        while CollectorUnit.objects.filter(name=new_name).exists():
+            # Generate a new unique name if the current name already exists in the database
+            if int(new_name[3:]) >= 9999:
+                last_alpha = chr(ord(new_name[2]) + 1)
+                new_name = f"CU{last_alpha}0001"
+            else:
+                new_name = f"CU{new_name[2:]}"
+                new_name = f"{new_name[:3]}{int(new_name[3:])+1:04d}"
+
+        self.name = new_name
+
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["-created_at"]
@@ -122,5 +203,10 @@ class Location(models.Model):
     picture = models.URLField(blank=False, null=False)
     name = models.CharField(max_length=1024, null=False, blank=False)
     address = models.CharField(max_length=1024)
+    latitude = models.DecimalField(max_digits=9, decimal_places=6)
+    longitude = models.DecimalField(max_digits=9, decimal_places=6)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]

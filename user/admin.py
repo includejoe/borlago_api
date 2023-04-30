@@ -23,7 +23,8 @@ class Location(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
-        "picture",
+        "longitude",
+        "latitude",
         "address",
         "created_at",
     )
@@ -36,6 +37,11 @@ class CollectorUnit(admin.ModelAdmin):
     list_display = (
         "id",
         "name",
+        "country",
+        "region",
+        "latitude",
+        "longitude",
+        "available",
         "created_at",
         "updated_at",
     )
