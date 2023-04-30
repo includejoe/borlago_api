@@ -1,3 +1,4 @@
+import environ
 from rest_framework import status
 from rest_framework import generics
 from rest_framework.response import Response
@@ -6,6 +7,9 @@ from rest_framework.permissions import IsAuthenticated
 from . import serializers
 from .utils import check_is_admin
 from user.models import CollectorUnit, User
+
+env = environ.Env()
+environ.Env.read_env()
 
 
 # Create your views here.
@@ -65,6 +69,15 @@ class AddCollectorToUnitAPIView(generics.UpdateAPIView):
                 return Response(
                     {"detail": "This user is not a collector"},
                     status=status.HTTP_404_NOT_FOUND,
+                )
+
+            # check if unit has more than 5 collectors
+            if unit.collectors.all().count() >= int(env("MAXIMUM_COLLECTORS")):
+                return Response(
+                    {
+                        "detail": "This unit has reached it's maximum number of collectors"
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
                 )
 
             # check if collector already belongs to this unit
