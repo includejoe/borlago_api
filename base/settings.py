@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "chat",
     "user",
     "waste",
+    "collector",
 ]
 
 MIDDLEWARE = [

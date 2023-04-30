@@ -20,8 +20,6 @@ class CollectorUnitSerializer(ModelSerializer):
 
 
 class CollectorSerializer(ModelSerializer):
-    collector_unit = CollectorUnitSerializer(many=False)
-
     class Meta:
         model = User
         fields = [
@@ -31,8 +29,6 @@ class CollectorSerializer(ModelSerializer):
             "last_name",
             "phone",
             "gender",
-            "is_staff",
-            "collector_unit",
             "is_deleted",
             "is_verified",
             "is_suspended",
@@ -46,3 +42,13 @@ class CollectorSerializer(ModelSerializer):
             "phone",
             "gender",
         ]
+
+
+class CollectorUnitDetailSerializer(ModelSerializer):
+    collectors = CollectorSerializer(many=True)
+
+    class Meta:
+        model = CollectorUnit
+        fields = "__all__"
+
+        read_only_fields = ["id", "created_at", "name", "collectors"]
