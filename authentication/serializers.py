@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from rest_framework import serializers
 
 from user.models import User
-from base.utils.email_validator import is_email_valid
+from base.utils.validate_email import is_email_valid
 
 
 class RegistrationSerializer(serializers.ModelSerializer):

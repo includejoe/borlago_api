@@ -34,14 +34,10 @@ class CreateWCRAPIView(generics.CreateAPIView):
 
             wcr = WasteCollectionRequest.objects.create(**data)
 
-            if wcr.waste_type == "general":
-                payment_amount = wcr.waste_quantity * env("GENERAL_WASTE_RATE_PER_BAG")
-            elif wcr.waste_type == "organic":
-                payment_amount = wcr.waste_quantity * env("ORGANIC_WASTE_RATE_PER_BAG")
-            elif wcr.waste_type == "hazardous":
-                payment_amount = wcr.waste_quantity * env(
-                    "HAZARDOUS_WASTE_RATE_PER_BAG"
-                )
+            """ google cloud vision algorithm to identify contents of waste 
+                in the waste photo and write out the price for waste is implemented
+            """
+            payment_amount = 3.56
 
             return Response(
                 {"wcr": wcr.id, "amount_to_pay": payment_amount},

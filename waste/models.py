@@ -23,7 +23,7 @@ class WasteCollectionRequest(models.Model):
     )
     waste_type = models.CharField(max_length=128, choices=WASTE_TYPE)
     waste_desc = models.TextField(blank=True, null=True)
-    waste_quantity = models.IntegerField()
+    waste_photo = models.URLField(null=False, blank=False)
     collector_unit = models.ForeignKey(
         CollectorUnit,
         on_delete=models.DO_NOTHING,

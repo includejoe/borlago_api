@@ -32,3 +32,4 @@ pip-lock.txt
 # Miscellaneous
 *.DS_Store
 Thumbs.db
+google_vision_gpt.md

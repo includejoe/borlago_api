@@ -6,8 +6,8 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 
 from . import serializers
-from .utils import check_is_admin
 from user.models import CollectorUnit, User
+from base.utils.validate_admin import check_is_admin
 
 env = environ.Env()
 environ.Env.read_env()
@@ -117,7 +117,7 @@ class AddCollectorToUnitAPIView(generics.UpdateAPIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
-            APIException(detail=e)
+            raise APIException(detail=e)
 
 
 add_collector_to_unit_view = AddCollectorToUnitAPIView.as_view()
@@ -182,7 +182,7 @@ class CollectorDetailAPIView(generics.RetrieveUpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            APIException(detail=e)
+            raise APIException(detail=e)
 
     def patch(self, request, collector_id):
         error_response = check_is_admin(request)
@@ -210,7 +210,7 @@ class CollectorDetailAPIView(generics.RetrieveUpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            APIException(detail=e)
+            raise APIException(detail=e)
 
 
 collector_detail_view = CollectorDetailAPIView.as_view()
@@ -237,7 +237,7 @@ class CollectorUnitDetailAPIView(generics.RetrieveUpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            APIException(detail=e)
+            raise APIException(detail=e)
 
     def patch(self, request, unit_id):
         error_response = check_is_admin(request)
@@ -266,7 +266,7 @@ class CollectorUnitDetailAPIView(generics.RetrieveUpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
-            APIException(detail=e)
+            raise APIException(detail=e)
 
 
 collector_unit_detail_view = CollectorUnitDetailAPIView.as_view()
