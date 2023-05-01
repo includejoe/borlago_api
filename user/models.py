@@ -70,13 +70,6 @@ class User(AbstractBaseUser, PermissionsMixin):
     momo_number = models.CharField(max_length=128, null=True, blank=True)
     gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
     is_staff = models.BooleanField(default=False)
-    collector_unit = models.ForeignKey(
-        "CollectorUnit",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="collectors",
-    )
     user_type = models.PositiveSmallIntegerField(
         default=2,
         validators=[
@@ -85,10 +78,20 @@ class User(AbstractBaseUser, PermissionsMixin):
         ],
     )  # 1 -> Admin, 2 -> Normal User, 3 -> Collector
     is_deleted = models.BooleanField(default=False)
-    is_verified = models.BooleanField(default=None, null=True, blank=True)
-    is_suspended = models.BooleanField(default=None, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # COLLECTOR SPECIFIC FIELDS
+    is_verified = models.BooleanField(default=None, null=True, blank=True)
+    is_suspended = models.BooleanField(default=None, null=True, blank=True)
+    profile_photo = models.URLField(null=True, blank=True)
+    collector_unit = models.ForeignKey(
+        "CollectorUnit",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="collectors",
+    )
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name", "phone", "gender"]
@@ -118,6 +121,12 @@ class User(AbstractBaseUser, PermissionsMixin):
                 raise ValidationError(
                     {
                         "is_suspended": "A user of type not equal to 3(collector) must have this field set to null"
+                    }
+                )
+            if self.profile_photo is not None:
+                raise ValidationError(
+                    {
+                        "profile_photo": "A user of type not equal to 3(collector) must have this field set to null"
                     }
                 )
 
