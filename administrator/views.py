@@ -6,7 +6,7 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 
 from . import serializers
-from .utils import check_is_admin
+from base.utils.validate_admin import check_is_admin
 from user.models import CollectorUnit, User
 
 env = environ.Env()
