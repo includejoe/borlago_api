@@ -3,6 +3,7 @@ from rest_framework import generics
 from rest_framework.response import Response
 from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.hashers import check_password
 
 from . import serializers
 from .models import User
@@ -64,6 +65,38 @@ user_detail_view = UserDetailAPIView.as_view()
 class ChangePasswordAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.PasswordSerializer
+
+    def patch(self, request):
+        user = request.user
+
+        current_password = request.data.get("current_password", None)
+        new_password = request.data.get("new_password", None)
+
+        if check_password(new_password, user.password):
+            return Response(
+                {"detail": "New password can not be same as current password"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        if check_password(current_password, user.password):
+            serializer = self.serializer_class(
+                user,
+                data={"password": new_password},
+                partial=True,
+                context={"request": request},
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            return Response(
+                {"detail": "Password changed successfully"},
+                status=status.HTTP_200_OK,
+            )
+        else:
+            return Response(
+                {"detail": "Current password is incorrect"},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
 
 change_password_view = ChangePasswordAPIView.as_view()
