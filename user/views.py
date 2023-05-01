@@ -72,31 +72,34 @@ class ChangePasswordAPIView(generics.UpdateAPIView):
         current_password = request.data.get("current_password", None)
         new_password = request.data.get("new_password", None)
 
-        if check_password(new_password, user.password):
-            return Response(
-                {"detail": "New password can not be same as current password"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+        try:
+            if check_password(new_password, user.password):
+                return Response(
+                    {"detail": "New password can not be same as current password"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
 
-        if check_password(current_password, user.password):
-            serializer = self.serializer_class(
-                user,
-                data={"password": new_password},
-                partial=True,
-                context={"request": request},
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            if check_password(current_password, user.password):
+                serializer = self.serializer_class(
+                    user,
+                    data={"password": new_password},
+                    partial=True,
+                    context={"request": request},
+                )
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
 
-            return Response(
-                {"detail": "Password changed successfully"},
-                status=status.HTTP_200_OK,
-            )
-        else:
-            return Response(
-                {"detail": "Current password is incorrect"},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+                return Response(
+                    {"detail": "Password changed successfully"},
+                    status=status.HTTP_200_OK,
+                )
+            else:
+                return Response(
+                    {"detail": "Current password is incorrect"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        except Exception as e:
+            raise APIException(detail=e)
 
 
 change_password_view = ChangePasswordAPIView.as_view()
@@ -125,6 +128,13 @@ class ConfirmWasteCollectionAPIView(generics.UpdateAPIView):
 
         try:
             wcr = WasteCollectionRequest.objects.get(id=wcr_id)
+
+            if wcr.status == 3:
+                return Response(
+                    {"detail": "This WCR has already been completed"},
+                    status=status.HTTP_404_NOT_FOUND,
+                )
+
             serializer = self.serializer_class(
                 wcr,
                 data=data,

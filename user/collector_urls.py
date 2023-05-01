@@ -5,8 +5,8 @@ app_name = "collector"
 
 urlpatterns = [
     path(
-        "confirm/wcr-pickup/",
+        "confirm/waste-collection/",
         confirm_waste_collection_view,
-        name="confirm-wcr-pickup",
+        name="confirm-waste-collection",
     ),
 ]

@@ -1,13 +1,7 @@
 from rest_framework import serializers
 
-from .models import User, CollectorUnit
+from .models import User
 from waste.models import WasteCollectionRequest
-
-
-class CollectorUnitSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CollectorUnit
-        fields = "__all__"
 
 
 class UserSerializer(serializers.ModelSerializer):
