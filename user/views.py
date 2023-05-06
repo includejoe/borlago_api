@@ -16,9 +16,9 @@ class UserDetailAPIView(generics.RetrieveUpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.UserSerializer
 
-    def retrieve(self, _, user_id):
+    def retrieve(self, _, email):
         try:
-            user = User.objects.get(id=user_id)
+            user = User.objects.get(email=email)
             serializer = self.serializer_class(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
         except User.DoesNotExist:
@@ -29,12 +29,12 @@ class UserDetailAPIView(generics.RetrieveUpdateAPIView):
         except Exception as e:
             raise APIException(detail=e)
 
-    def patch(self, request, user_id):
+    def patch(self, request, email):
         user = request.user
         data = request.data
 
         try:
-            user_to_update = User.objects.get(id=user_id)
+            user_to_update = User.objects.get(id=email)
 
             if user.id != user_to_update.id:
                 return Response(
