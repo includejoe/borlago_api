@@ -29,6 +29,7 @@ class CollectorSerializer(ModelSerializer):
             "last_name",
             "phone",
             "gender",
+            "profile_photo",
             "is_deleted",
             "is_verified",
             "is_suspended",
@@ -41,6 +42,7 @@ class CollectorSerializer(ModelSerializer):
             "last_name",
             "phone",
             "gender",
+            "profile_photo",
         ]
 
 

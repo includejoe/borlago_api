@@ -60,6 +60,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(max_length=255)
     password = serializers.CharField(max_length=128, write_only=True)
+    user_type = serializers.IntegerField(write_only=True)
     jwt = serializers.SerializerMethodField()
 
     def get_jwt(self, obj):
@@ -68,7 +69,7 @@ class LoginSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["email", "password", "jwt"]
+        fields = ["email", "user_type", "password", "jwt"]
 
     def validate(self, data):
         email = data.get("email", None)
