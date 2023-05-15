@@ -59,7 +59,7 @@ class UserManager(BaseUserManager):
 
 # Create your models here.
 class User(AbstractBaseUser, PermissionsMixin):
-    GENDER_CHOICES = (("male", "male"), ("female", "female"), ("other", "other"))
+    GENDER_CHOICES = (("Male", "Male"), ("Female", "Female"), ("Other", "Other"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=255, unique=True)
@@ -214,8 +214,7 @@ class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="locations")
     picture = models.URLField(blank=False, null=False)
-    name = models.CharField(max_length=1024, null=False, blank=False)
-    address = models.CharField(max_length=1024)
+    address = models.CharField(max_length=1024, null=False, blank=False)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     created_at = models.DateTimeField(auto_now_add=True)

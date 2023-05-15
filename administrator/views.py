@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from . import serializers
 from user.models import CollectorUnit, User
+from waste.models import WasteCollectionRequest
 from base.utils.validate_admin import check_is_admin
 
 env = environ.Env()
@@ -270,3 +271,46 @@ class CollectorUnitDetailAPIView(generics.RetrieveUpdateAPIView):
 
 
 collector_unit_detail_view = CollectorUnitDetailAPIView.as_view()
+
+
+class WasteCollectionRequestsAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.WasteCollectionRequestSerializer
+    queryset = WasteCollectionRequest.objects.all()
+
+    def list(self, request, *args, **kwargs):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+        return super().list(request, *args, **kwargs)
+
+
+get_wcrs_view = WasteCollectionRequestsAPIView.as_view()
+
+
+class WasteCollectionRequestDetailAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.WasteCollectionRequestSerializer
+
+    def retrieve(self, request, wcr_id):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+
+        try:
+            wcr = WasteCollectionRequest.objects.get(id=wcr_id)
+
+            serializer = self.serializer_class(wcr)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "This wcr does not exist"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            raise APIException(detail=e)
+
+
+wcr_detail_view = WasteCollectionRequestDetailAPIView.as_view()

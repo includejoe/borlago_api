@@ -9,9 +9,9 @@ from user.models import User, Location, CollectorUnit
 # Create your models here.
 class WasteCollectionRequest(models.Model):
     WASTE_TYPE = (
-        ("general", "general"),
-        ("organic", "organic"),
-        ("hazardous", "hazardous"),
+        ("General", "General"),
+        ("Organic", "Organic"),
+        ("Hazardous", "Hazardous"),
     )
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -41,6 +41,9 @@ class WasteCollectionRequest(models.Model):
     )  # 1 -> Pending, 2 -> In Progress, 3 -> Completed 4, -> Canceled
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class Payment(models.Model):
@@ -82,3 +85,6 @@ class Payment(models.Model):
                     "transaction_id": "This field can not be null when the payment status is 2"
                 }
             )
+
+    class Meta:
+        ordering = ["-created_at"]

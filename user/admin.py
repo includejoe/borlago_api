@@ -22,7 +22,6 @@ admin.site.register(models.User, User)
 class Location(admin.ModelAdmin):
     list_display = (
         "id",
-        "name",
         "longitude",
         "latitude",
         "address",
