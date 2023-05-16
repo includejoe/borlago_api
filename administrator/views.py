@@ -314,3 +314,39 @@ class WasteCollectionRequestDetailAPIView(generics.RetrieveAPIView):
 
 
 wcr_detail_view = WasteCollectionRequestDetailAPIView.as_view()
+
+
+class FilterCollectorUnitsAPIView(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.CollectorUnitSerializer
+
+    def get(self, request):
+        error_response = check_is_admin(request)
+
+        if error_response is not None:
+            return error_response
+
+        name = request.query_params.get("name", None)
+        unit_status = request.query_params.get("status", None)
+        region = request.query_params.get("region", None)
+        country = request.query_params.get("country", None)
+        units = CollectorUnit.objects.all()
+
+        if name:
+            name = "".join(c.upper() if c.isalpha() else c for c in name)
+            units = units.filter(name__icontains=name)
+        if unit_status:
+            if unit_status == "Available":
+                units = units.filter(available=True)
+            else:
+                units = units.filter(available=False)
+        if region:
+            units = units.filter(region__icontains=region)
+        if country:
+            units = units.filter(country__icontains=country)
+
+        serializer = self.serializer_class(units, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+filter_collector_units_view = FilterCollectorUnitsAPIView.as_view()

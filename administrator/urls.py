@@ -5,6 +5,7 @@ from .views import (
     add_collector_to_unit_view,
     get_collectors_view,
     get_collector_units_view,
+    filter_collector_units_view,
     collector_detail_view,
     collector_unit_detail_view,
     get_wcrs_view,
@@ -20,6 +21,11 @@ urlpatterns = [
         name="create-collector-unit",
     ),
     path("collector-unit/all/", get_collector_units_view, name="get-collector-units"),
+    path(
+        "collector-unit/filter/",
+        filter_collector_units_view,
+        name="filter-collector-units",
+    ),
     path(
         "collector-unit/add/collector/",
         add_collector_to_unit_view,
