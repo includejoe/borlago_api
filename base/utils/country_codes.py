@@ -1,0 +1,18 @@
+country_codes = {
+    "Benin": "BJ",
+    "Burkina Faso": "BF",
+    "Cape Verde": "CV",
+    "Ivory Coast": "CI",
+    "Gambia": "GM",
+    "Ghana": "GH",
+    "Guinea": "GN",
+    "Guinea-Bissau": "GW",
+    "Liberia": "LR",
+    "Mali": "ML",
+    "Mauritania": "MR",
+    "Niger": "NE",
+    "Nigeria": "NG",
+    "Senegal": "SN",
+    "Sierra Leone": "SL",
+    "Togo": "TG",
+}

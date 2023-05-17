@@ -9,6 +9,8 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 
+from base.utils.country_codes import country_codes
+
 
 class UserManager(BaseUserManager):
     def create_user(
@@ -180,26 +182,35 @@ class CollectorUnit(models.Model):
 
     # Generate unique name
     def save(self, *args, **kwargs):
+        country = self.country
+
+        if country in country_codes:
+            country_code = country_codes[country]
+        else:
+            raise ValidationError({"detail": "This country is not supported"})
+
         if self._state.adding:
-            last_instance = CollectorUnit.objects.all().order_by("-id").first()
+            last_instance = (
+                CollectorUnit.objects.filter(country=country).order_by("-id").first()
+            )
             if last_instance:
                 last_name = last_instance.name
                 if int(last_name[3:]) >= 9999:
                     last_alpha = chr(ord(last_name[2]) + 1)
-                    new_name = f"CU{last_alpha}0001"
+                    new_name = f"{country_code}{last_alpha}0001"
                 else:
-                    new_name = f"CU{last_name[2:]}"
+                    new_name = f"{country_code}{last_name[2:]}"
                     new_name = f"{new_name[:3]}{int(new_name[3:])+1:04d}"
             else:
-                new_name = "CUA0001"
+                new_name = f"{country_code}A0001"
 
             while CollectorUnit.objects.filter(name=new_name).exists():
                 # Generate a new unique name if the current name already exists in the database
                 if int(new_name[3:]) >= 9999:
                     last_alpha = chr(ord(new_name[2]) + 1)
-                    new_name = f"CU{last_alpha}0001"
+                    new_name = f"{country_code}{last_alpha}0001"
                 else:
-                    new_name = f"CU{new_name[2:]}"
+                    new_name = f"{country_code}{new_name[2:]}"
                     new_name = f"{new_name[:3]}{int(new_name[3:])+1:04d}"
 
             self.name = new_name

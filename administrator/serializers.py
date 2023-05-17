@@ -7,7 +7,7 @@ from waste.models import WasteCollectionRequest
 class CreateCollectorUnitSerializer(ModelSerializer):
     class Meta:
         model = CollectorUnit
-        fields = ["id", "country", "name", "region", "created_by"]
+        fields = ["id", "country", "name", "region", "available", "created_by"]
 
         read_only_fields = ["id", "name", "created_by"]
 
@@ -15,7 +15,15 @@ class CreateCollectorUnitSerializer(ModelSerializer):
 class CollectorUnitSerializer(ModelSerializer):
     class Meta:
         model = CollectorUnit
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "country",
+            "region",
+            "latitude",
+            "longitude",
+            "available",
+        ]
 
         read_only_fields = ["id", "created_at", "name"]
 
