@@ -145,8 +145,8 @@ class CollectorUnit(models.Model):
         null=False,
         blank=False,
     )
-    country = models.CharField(max_length=24, default="gh")
-    region = models.CharField(max_length=24, default="ga")
+    country = models.CharField(max_length=24, default="Ghana", editable=False)
+    region = models.CharField(max_length=24, default="Greater Accra")
     latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,

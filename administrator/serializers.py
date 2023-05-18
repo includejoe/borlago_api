@@ -35,8 +35,6 @@ class CollectorUnitNameSerializer(ModelSerializer):
 
 
 class CollectorSerializer(ModelSerializer):
-    collector_unit = CollectorUnitNameSerializer(many=False)
-
     class Meta:
         model = User
         fields = [
@@ -46,7 +44,6 @@ class CollectorSerializer(ModelSerializer):
             "last_name",
             "phone",
             "gender",
-            "collector_unit",
             "profile_photo",
             "is_deleted",
             "is_verified",
