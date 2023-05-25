@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import (
     create_collector_unit_view,
-    add_collector_to_unit_view,
+    add_or_remove_collector_to_unit_view,
     get_collectors_view,
     get_collector_units_view,
     filter_collector_units_view,
@@ -27,9 +27,9 @@ urlpatterns = [
         name="filter-collector-units",
     ),
     path(
-        "collector-unit/add/collector/",
-        add_collector_to_unit_view,
-        name="add-collector-to-unit",
+        "collector-unit/add-or-remove/collector/",
+        add_or_remove_collector_to_unit_view,
+        name="add-or-remove-collector-to-unit",
     ),
     path(
         "collector-unit/detail/<str:unit_id>/",

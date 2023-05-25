@@ -37,7 +37,7 @@ class CreateCollectorUnitAPIView(generics.CreateAPIView):
 create_collector_unit_view = CreateCollectorUnitAPIView.as_view()
 
 
-class AddCollectorToUnitAPIView(generics.UpdateAPIView):
+class AddOrRemoveCollectorToUnitAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.CollectorUnitDetailSerializer
 
@@ -48,56 +48,79 @@ class AddCollectorToUnitAPIView(generics.UpdateAPIView):
             return error_response
 
         admin = request.user
-        collector_id = request.data.get("collector", None)
-        unit_id = request.data.get("collector_unit", None)
+        collector_id = request.data.get("collector_id", None)
+        unit_name = request.data.get("collector_unit", None)
+        type = request.data.get("type", None)
 
         if collector_id is None:
             return Response(
                 {"detail": "Must provide collector ID"},
-                status=status.HTTP_404_NOT_FOUND,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
-        if unit_id is None:
+        if unit_name is None:
             return Response(
-                {"detail": "Must provide collector_unit ID"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"detail": "Must provide collector_unit"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if type is None:
+            return Response(
+                {"detail": "Must provide type"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
-            unit = CollectorUnit.objects.get(id=unit_id)
-            collector = User.objects.get(id=collector_id)
+            unit = CollectorUnit.objects.get(name=unit_name)
+            collector = User.objects.get(collector_id=collector_id)
 
             if collector.user_type != 3:
                 return Response(
                     {"detail": "This user is not a collector"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
-            # check if unit has more than 5 collectors
-            if unit.collectors.all().count() >= int(env("MAXIMUM_COLLECTORS")):
-                return Response(
-                    {
-                        "detail": "This unit has reached it's maximum number of collectors"
-                    },
-                    status=status.HTTP_403_FORBIDDEN,
+                    status=status.HTTP_400_BAD_REQUEST,
                 )
 
             # check if collector already belongs to this unit
-            already_added = unit.collectors.filter(id=collector_id).exists()
+            already_added = unit.collectors.filter(collector_id=collector_id).exists()
 
-            if already_added:
-                unit.collectors.remove(collector)
-            else:
-                # check if collector already belongs to a unit
-                all_units = CollectorUnit.objects.all()
-
-                if all_units.filter(collectors=collector).exists():
+            if type == "add":
+                # check if unit has more than 5 collectors
+                if unit.collectors.all().count() >= int(env("MAXIMUM_COLLECTORS")):
                     return Response(
-                        {"detail": "This collector already belongs to a unit"},
+                        {
+                            "detail": "This unit has reached it's maximum number of collectors"
+                        },
                         status=status.HTTP_403_FORBIDDEN,
                     )
 
-                unit.collectors.add(collector)
+                if already_added:
+                    return Response(
+                        {"detail": "This collector already belongs to this unit"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+                else:
+                    # check if collector already belongs to a unit
+                    all_units = CollectorUnit.objects.all()
+
+                    if all_units.filter(collectors=collector).exists():
+                        return Response(
+                            {"detail": "This collector already belongs to a unit"},
+                            status=status.HTTP_403_FORBIDDEN,
+                        )
+
+                    unit.collectors.add(collector)
+            elif type == "remove":
+                if already_added:
+                    unit.collectors.remove(collector)
+                else:
+                    return Response(
+                        {"detail": "This collector does not belong to this unit"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            else:
+                return Response(
+                    {"detail": "Invalid type"}, status=status.HTTP_400_BAD_REQUEST
+                )
 
             # set updated_by field
             unit.updated_by = admin
@@ -121,7 +144,7 @@ class AddCollectorToUnitAPIView(generics.UpdateAPIView):
             raise APIException(detail=e)
 
 
-add_collector_to_unit_view = AddCollectorToUnitAPIView.as_view()
+add_or_remove_collector_to_unit_view = AddOrRemoveCollectorToUnitAPIView.as_view()
 
 
 class GetCollectorsAPIView(generics.ListAPIView):

@@ -18,6 +18,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+# TODO: Create a separate app for collectors and users
+
 
 # Application definition
 INSTALLED_APPS = [
