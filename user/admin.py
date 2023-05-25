@@ -9,6 +9,7 @@ class User(admin.ModelAdmin):
         "id",
         "first_name",
         "last_name",
+        "collector_id",
         "phone",
         "gender",
         "user_type",
