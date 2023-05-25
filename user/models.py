@@ -1,4 +1,6 @@
 import uuid
+import time
+import random
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -8,6 +10,8 @@ from django.contrib.auth.models import (
     AbstractBaseUser,
     PermissionsMixin,
 )
+
+from base.utils.country_codes import country_codes
 
 
 class UserManager(BaseUserManager):
@@ -59,7 +63,7 @@ class UserManager(BaseUserManager):
 
 # Create your models here.
 class User(AbstractBaseUser, PermissionsMixin):
-    GENDER_CHOICES = (("male", "male"), ("female", "female"), ("other", "other"))
+    GENDER_CHOICES = (("Male", "Male"), ("Female", "Female"), ("Other", "Other"))
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=255, unique=True)
@@ -85,6 +89,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_verified = models.BooleanField(default=None, null=True, blank=True)
     is_suspended = models.BooleanField(default=None, null=True, blank=True)
     profile_photo = models.URLField(null=True, blank=True)
+    collector_id = models.CharField(max_length=128, null=True, blank=True, unique=True)
     collector_unit = models.ForeignKey(
         "CollectorUnit",
         on_delete=models.SET_NULL,
@@ -130,6 +135,30 @@ class User(AbstractBaseUser, PermissionsMixin):
                     }
                 )
 
+    def generate_collector_id(self):
+        timestamp = str(int(time.time()))[-6:]  # Get current Unix timestamp
+        random_number = str(random.randint(100000, 999999))  # Get random 6 digit number
+        counter = str(self.__class__.objects.count() + 1).zfill(
+            6
+        )  # Get current number of users
+
+        collector_id = timestamp + random_number + counter[-2:]
+        return collector_id[:6]
+
+    def save(self, *args, **kwargs):
+        collector_id = self.collector_id
+
+        if self._state.adding:
+            if self.user_type == 3:
+                if collector_id is None:
+                    self.collector_id = self.generate_collector_id()
+                else:
+                    raise ValidationError(
+                        {"collector_id": "A collector must have a collector_id"}
+                    )
+
+        super().save(*args, **kwargs)
+
     class Meta:
         ordering = ["-created_at"]
 
@@ -143,8 +172,8 @@ class CollectorUnit(models.Model):
         null=False,
         blank=False,
     )
-    country = models.CharField(max_length=24, default="gh")
-    region = models.CharField(max_length=24, default="ga")
+    country = models.CharField(max_length=24, default="Ghana", editable=False)
+    region = models.CharField(max_length=24, default="Greater Accra")
     latitude = models.DecimalField(
         max_digits=9,
         decimal_places=6,
@@ -180,26 +209,35 @@ class CollectorUnit(models.Model):
 
     # Generate unique name
     def save(self, *args, **kwargs):
+        country = self.country
+
+        if country in country_codes:
+            country_code = country_codes[country]
+        else:
+            raise ValidationError({"detail": "This country is not supported"})
+
         if self._state.adding:
-            last_instance = CollectorUnit.objects.all().order_by("-id").first()
+            last_instance = (
+                CollectorUnit.objects.filter(country=country).order_by("-id").first()
+            )
             if last_instance:
                 last_name = last_instance.name
                 if int(last_name[3:]) >= 9999:
                     last_alpha = chr(ord(last_name[2]) + 1)
-                    new_name = f"CU{last_alpha}0001"
+                    new_name = f"{country_code}{last_alpha}0001"
                 else:
-                    new_name = f"CU{last_name[2:]}"
+                    new_name = f"{country_code}{last_name[2:]}"
                     new_name = f"{new_name[:3]}{int(new_name[3:])+1:04d}"
             else:
-                new_name = "CUA0001"
+                new_name = f"{country_code}A0001"
 
             while CollectorUnit.objects.filter(name=new_name).exists():
                 # Generate a new unique name if the current name already exists in the database
                 if int(new_name[3:]) >= 9999:
                     last_alpha = chr(ord(new_name[2]) + 1)
-                    new_name = f"CU{last_alpha}0001"
+                    new_name = f"{country_code}{last_alpha}0001"
                 else:
-                    new_name = f"CU{new_name[2:]}"
+                    new_name = f"{country_code}{new_name[2:]}"
                     new_name = f"{new_name[:3]}{int(new_name[3:])+1:04d}"
 
             self.name = new_name
@@ -214,8 +252,7 @@ class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="locations")
     picture = models.URLField(blank=False, null=False)
-    name = models.CharField(max_length=1024, null=False, blank=False)
-    address = models.CharField(max_length=1024)
+    address = models.CharField(max_length=1024, null=False, blank=False)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     created_at = models.DateTimeField(auto_now_add=True)

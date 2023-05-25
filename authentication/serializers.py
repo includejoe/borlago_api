@@ -15,13 +15,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "collector_id",
             "password",
             "phone",
             "gender",
             "user_type",
         ]
 
-        read_only_fields = ["id"]
+        read_only_fields = ["id", "collector_id"]
 
     def validate_email(self, value):
         valid, error_message = is_email_valid(value)

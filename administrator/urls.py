@@ -5,8 +5,11 @@ from .views import (
     add_collector_to_unit_view,
     get_collectors_view,
     get_collector_units_view,
+    filter_collector_units_view,
     collector_detail_view,
     collector_unit_detail_view,
+    get_wcrs_view,
+    wcr_detail_view,
 )
 
 app_name = "administrator"
@@ -18,6 +21,11 @@ urlpatterns = [
         name="create-collector-unit",
     ),
     path("collector-unit/all/", get_collector_units_view, name="get-collector-units"),
+    path(
+        "collector-unit/filter/",
+        filter_collector_units_view,
+        name="filter-collector-units",
+    ),
     path(
         "collector-unit/add/collector/",
         add_collector_to_unit_view,
@@ -33,5 +41,11 @@ urlpatterns = [
         "collector/detail/<str:collector_id>/",
         collector_detail_view,
         name="collector-detail",
+    ),
+    path("wcr/all/", get_wcrs_view, name="get-wcrs"),
+    path(
+        "wcr/detail/<str:wcr_id>/",
+        wcr_detail_view,
+        name="wcr-detail",
     ),
 ]

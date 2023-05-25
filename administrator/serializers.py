@@ -1,12 +1,13 @@
 from rest_framework.serializers import ModelSerializer
 
-from user.models import User, CollectorUnit
+from user.models import User, CollectorUnit, Location
+from waste.models import WasteCollectionRequest
 
 
 class CreateCollectorUnitSerializer(ModelSerializer):
     class Meta:
         model = CollectorUnit
-        fields = ["id", "country", "name", "region", "created_by"]
+        fields = ["id", "country", "name", "region", "available", "created_by"]
 
         read_only_fields = ["id", "name", "created_by"]
 
@@ -14,9 +15,23 @@ class CreateCollectorUnitSerializer(ModelSerializer):
 class CollectorUnitSerializer(ModelSerializer):
     class Meta:
         model = CollectorUnit
-        fields = "__all__"
+        fields = [
+            "id",
+            "name",
+            "country",
+            "region",
+            "latitude",
+            "longitude",
+            "available",
+        ]
 
         read_only_fields = ["id", "created_at", "name"]
+
+
+class CollectorUnitNameSerializer(ModelSerializer):
+    class Meta:
+        model = CollectorUnit
+        fields = ["name"]
 
 
 class CollectorSerializer(ModelSerializer):
@@ -27,6 +42,7 @@ class CollectorSerializer(ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "collector_id",
             "phone",
             "gender",
             "profile_photo",
@@ -39,6 +55,7 @@ class CollectorSerializer(ModelSerializer):
             "id",
             "email",
             "first_name",
+            "collector_id",
             "last_name",
             "phone",
             "gender",
@@ -54,3 +71,17 @@ class CollectorUnitDetailSerializer(ModelSerializer):
         fields = "__all__"
 
         read_only_fields = ["id", "created_at", "name", "collectors"]
+
+
+class LocationSerializer(ModelSerializer):
+    class Meta:
+        model = Location
+        fields = ["address"]
+
+
+class WasteCollectionRequestSerializer(ModelSerializer):
+    pick_up_location = LocationSerializer(many=False)
+
+    class Meta:
+        model = WasteCollectionRequest
+        fields = "__all__"
