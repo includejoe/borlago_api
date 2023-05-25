@@ -1,4 +1,6 @@
 import uuid
+import time
+import random
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -87,6 +89,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_verified = models.BooleanField(default=None, null=True, blank=True)
     is_suspended = models.BooleanField(default=None, null=True, blank=True)
     profile_photo = models.URLField(null=True, blank=True)
+    collector_id = models.CharField(max_length=128, null=True, blank=True, unique=True)
     collector_unit = models.ForeignKey(
         "CollectorUnit",
         on_delete=models.SET_NULL,
@@ -131,6 +134,30 @@ class User(AbstractBaseUser, PermissionsMixin):
                         "profile_photo": "A user of type not equal to 3(collector) must have this field set to null"
                     }
                 )
+
+    def generate_collector_id(self):
+        timestamp = str(int(time.time()))[-6:]  # Get current Unix timestamp
+        random_number = str(random.randint(100000, 999999))  # Get random 6 digit number
+        counter = str(self.__class__.objects.count() + 1).zfill(
+            6
+        )  # Get current number of users
+
+        collector_id = timestamp + random_number + counter[-2:]
+        return collector_id[:6]
+
+    def save(self, *args, **kwargs):
+        collector_id = self.collector_id
+
+        if self._state.adding:
+            if self.user_type == 3:
+                if collector_id is None:
+                    self.collector_id = self.generate_collector_id()
+                else:
+                    raise ValidationError(
+                        {"collector_id": "A collector must have a collector_id"}
+                    )
+
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["-created_at"]
