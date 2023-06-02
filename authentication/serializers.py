@@ -15,6 +15,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "country",
             "collector_id",
             "password",
             "phone",

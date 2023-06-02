@@ -12,6 +12,7 @@ class User(admin.ModelAdmin):
         "collector_id",
         "phone",
         "gender",
+        "country",
         "user_type",
         "created_at",
     )

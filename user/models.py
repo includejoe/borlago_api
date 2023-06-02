@@ -21,6 +21,7 @@ class UserManager(BaseUserManager):
         last_name,
         email,
         gender,
+        country,
         phone,
         user_type=2,
         password=None,
@@ -34,6 +35,7 @@ class UserManager(BaseUserManager):
         user.first_name = first_name
         user.last_name = last_name
         user.gender = gender
+        user.country = country
         user.phone = phone
         user.user_type = user_type
         user.set_password(password)
@@ -43,12 +45,15 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, first_name, last_name, email, gender, phone, password):
+    def create_superuser(
+        self, first_name, last_name, email, gender, country, phone, password
+    ):
         user = self.create_user(
             first_name=first_name,
             last_name=last_name,
             email=email,
             gender=gender,
+            country=country,
             phone=phone,
             password=password,
             user_type=1,
@@ -64,6 +69,7 @@ class UserManager(BaseUserManager):
 # Create your models here.
 class User(AbstractBaseUser, PermissionsMixin):
     GENDER_CHOICES = (("Male", "Male"), ("Female", "Female"), ("Other", "Other"))
+    COUNTRY_CHOICES = ((country, country) for country in country_codes.keys())
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=255, unique=True)
@@ -73,6 +79,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     phone = models.CharField(max_length=128, default="233")
     momo_number = models.CharField(max_length=128, null=True, blank=True)
     gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
+    country = models.CharField(max_length=56, default="Ghana", choices=GENDER_CHOICES)
     is_staff = models.BooleanField(default=False)
     user_type = models.PositiveSmallIntegerField(
         default=2,
