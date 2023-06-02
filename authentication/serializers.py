@@ -6,24 +6,34 @@ from base.utils.validate_email import is_email_valid
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(max_length=128, write_only=True)
+    last_name = serializers.CharField(max_length=128, write_only=True)
+    country = serializers.CharField(max_length=64, write_only=True)
+    gender = serializers.CharField(max_length=12, write_only=True)
+    phone = serializers.CharField(max_length=128, write_only=True)
     password = serializers.CharField(max_length=128, min_length=6, write_only=True)
+    user_type = serializers.IntegerField(write_only=True)
+    jwt = serializers.SerializerMethodField()
+
+    def get_jwt(self, obj):
+        user = User.objects.get(email=obj.email)
+        return user.tokens["access"]
 
     class Meta:
         model = User
         fields = [
-            "id",
             "email",
             "first_name",
             "last_name",
             "country",
-            "collector_id",
             "password",
             "phone",
             "gender",
+            "jwt",
             "user_type",
         ]
 
-        read_only_fields = ["id", "collector_id"]
+        read_only_fields = ["collector_id"]
 
     def validate_email(self, value):
         valid, error_message = is_email_valid(value)

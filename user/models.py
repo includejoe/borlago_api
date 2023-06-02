@@ -78,8 +78,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)
     phone = models.CharField(max_length=128, default="233")
     momo_number = models.CharField(max_length=128, null=True, blank=True)
-    gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
-    country = models.CharField(max_length=56, default="Ghana", choices=GENDER_CHOICES)
+    gender = models.CharField(max_length=12, default="Other", choices=GENDER_CHOICES)
+    country = models.CharField(max_length=64, default="Ghana", choices=COUNTRY_CHOICES)
     is_staff = models.BooleanField(default=False)
     user_type = models.PositiveSmallIntegerField(
         default=2,
