@@ -9,7 +9,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException, ParseError
 from geopy.distance import distance as geopy_distance
 
-
 from . import serializers
 from .models import WasteCollectionRequest, Payment
 from user.models import Location, CollectorUnit
@@ -30,8 +29,14 @@ class CreateWCRAPIView(generics.CreateAPIView):
         try:
             pick_up_location = data.get("pick_up_location")
             pick_up_location = Location.objects.get(id=pick_up_location)
-            data["pick_up_location"] = pick_up_location
 
+            if pick_up_location.user != request.user:
+                return Response(
+                    {"detail": "This user does not own this pick_up_location"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            data["pick_up_location"] = pick_up_location
             wcr = WasteCollectionRequest.objects.create(**data)
 
             """ google cloud vision algorithm to identify contents of waste 

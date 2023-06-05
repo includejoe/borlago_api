@@ -6,7 +6,7 @@ from . import models
 # Register your models here.
 class WasteCollectionRequest(admin.ModelAdmin):
     list_display = (
-        "id",
+        "public_id",
         "waste_type",
         "waste_desc",
         "collection_datetime",

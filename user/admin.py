@@ -6,13 +6,13 @@ from . import models
 # Register your models here.
 class User(admin.ModelAdmin):
     list_display = (
-        "id",
+        "email",
         "first_name",
         "last_name",
-        "email",
         "phone",
         "gender",
         "country",
+        "collector_id",
         "user_type",
         "created_at",
     )
@@ -36,7 +36,6 @@ admin.site.register(models.Location, Location)
 
 class CollectorUnit(admin.ModelAdmin):
     list_display = (
-        "id",
         "name",
         "country",
         "region",

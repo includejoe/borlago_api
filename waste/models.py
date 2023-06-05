@@ -1,4 +1,6 @@
 import uuid
+import time
+import random
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
@@ -13,8 +15,10 @@ class WasteCollectionRequest(models.Model):
         ("Organic", "Organic"),
         ("Hazardous", "Hazardous"),
     )
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    public_id = models.CharField(
+        max_length=128, null=False, blank=False, editable=False
+    )
     requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wcrs")
     pick_up_location = models.ForeignKey(
         Location,
@@ -41,6 +45,22 @@ class WasteCollectionRequest(models.Model):
     )  # 1 -> Pending, 2 -> In Progress, 3 -> Completed 4, -> Canceled
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def generate_wcr_id(self):
+        timestamp = str(int(time.time()))[-8:]  # Get current Unix timestamp
+        random_number = str(random.randint(100000, 999999))  # Get random 6 digit number
+        counter = str(self.__class__.objects.count() + 1).zfill(
+            8
+        )  # Get current number of wcrs
+
+        wcr_id = timestamp + random_number + counter[-2]
+        return wcr_id[:8]
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self.wcr_id = self.generate_wcr_id()
+
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["-created_at"]

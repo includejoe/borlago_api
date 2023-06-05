@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.utils import timezone
 
 from .models import WasteCollectionRequest, Payment
 
@@ -14,10 +13,9 @@ class PaymentSerializer(serializers.ModelSerializer):
 class WCRSerializer(serializers.ModelSerializer):
     class Meta:
         model = WasteCollectionRequest
-        fields = "__all__"
+        exclude = ["id"]
 
         read_only_fields = [
-            "id",
             "created_at",
             "payment",
             "collector_unit",
