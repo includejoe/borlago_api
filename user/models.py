@@ -68,7 +68,6 @@ class UserManager(BaseUserManager):
 
 # Create your models here.
 class User(AbstractBaseUser, PermissionsMixin):
-    GENDER_CHOICES = (("Male", "Male"), ("Female", "Female"), ("Other", "Other"))
     COUNTRY_CHOICES = ((country, country) for country in country_codes.keys())
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -78,7 +77,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)
     phone = models.CharField(max_length=128, default="233")
     momo_number = models.CharField(max_length=128, null=True, blank=True)
-    gender = models.CharField(max_length=12, default="Other", choices=GENDER_CHOICES)
+    gender = models.CharField(max_length=12, default="Other")
     country = models.CharField(max_length=64, default="Ghana", choices=COUNTRY_CHOICES)
     is_staff = models.BooleanField(default=False)
     user_type = models.PositiveSmallIntegerField(
