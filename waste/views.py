@@ -24,7 +24,7 @@ class CreateWCRAPIView(generics.CreateAPIView):
 
     def create(self, request):
         data = request.data
-        data["requester"] = request.user
+        data["user"] = request.user
 
         try:
             pick_up_location = data.get("pick_up_location")
@@ -54,6 +54,40 @@ class CreateWCRAPIView(generics.CreateAPIView):
 
 
 create_wcr_view = CreateWCRAPIView.as_view()
+
+
+class ListUserWCRsAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.WCRSerializer
+
+    def list(self, request):
+        user = request.user
+        try:
+            wcrs = WasteCollectionRequest.objects.filter(user=user)
+            serializer = self.serializer_class(wcrs, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException(detail=e)
+
+
+list_user_wcrs_view = ListUserWCRsAPIView.as_view()
+
+
+class WCRDetailAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.WCRSerializer
+
+    def retrieve(self, request, wcr_id):
+        user = request.user
+        try:
+            wcr = WasteCollectionRequest.objects.get(user=user, id=wcr_id)
+            serializer = self.serializer_class(wcr)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            APIException(detail=e)
+
+
+wcr_detail_view = WCRDetailAPIView.as_view()
 
 
 class MakeWCRPaymentAPIView(generics.CreateAPIView):

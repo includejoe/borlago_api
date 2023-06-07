@@ -11,6 +11,11 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 class WCRSerializer(serializers.ModelSerializer):
+    pick_up_location = serializers.SerializerMethodField()
+
+    def get_pick_up_location(self, obj):
+        return obj.pick_up_location.address
+
     class Meta:
         model = WasteCollectionRequest
         exclude = ["id"]

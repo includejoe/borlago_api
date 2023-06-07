@@ -6,12 +6,6 @@ from datetime import timedelta
 env = environ.Env()
 environ.Env.read_env()
 
-# TODO: User create location
-# TODO: User get locations
-# TODO: payment model with fields; type("Mobile Money", "Bank Card"), name, user, created_at, number
-# TODO: User create payment methods
-# TODO: get user WCRs
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 

@@ -5,7 +5,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
 
-from user.models import User, Location, CollectorUnit
+from user.models import User, Location, CollectorUnit, PaymentMethod
 
 
 # Create your models here.
@@ -19,7 +19,7 @@ class WasteCollectionRequest(models.Model):
     public_id = models.CharField(
         max_length=128, null=False, blank=False, editable=False
     )
-    requester = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wcrs")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="wcrs")
     pick_up_location = models.ForeignKey(
         Location,
         on_delete=models.CASCADE,
@@ -46,19 +46,20 @@ class WasteCollectionRequest(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def generate_wcr_id(self):
+    def generate_public_id(self):
         timestamp = str(int(time.time()))[-8:]  # Get current Unix timestamp
         random_number = str(random.randint(100000, 999999))  # Get random 6 digit number
         counter = str(self.__class__.objects.count() + 1).zfill(
             8
         )  # Get current number of wcrs
 
-        wcr_id = timestamp + random_number + counter[-2]
-        return wcr_id[:8]
+        public_id = timestamp + random_number + counter[-2]
+        public_id = "WCR-" + str(public_id[8:]).zfill(8)
+        return public_id
 
     def save(self, *args, **kwargs):
         if self._state.adding:
-            self.wcr_id = self.generate_wcr_id()
+            self.public_id = self.generate_public_id()
 
         super().save(*args, **kwargs)
 
@@ -75,18 +76,19 @@ class Payment(models.Model):
         blank=True,
         related_name="payment",
     )
-    payer = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.DO_NOTHING,
         related_name="payments",
     )
-    type = models.PositiveSmallIntegerField(
-        default=1,
-        validators=[
-            MinValueValidator(1),
-            MaxValueValidator(2),
-        ],
-    )  # 1 -> MoMo, 2 -> Cash
+    method = models.ForeignKey(
+        PaymentMethod,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="used_on_payments",
+    )
+    account_no = models.CharField(max_length=255, null=False, blank=False)
     amount = models.DecimalField(max_digits=15, decimal_places=2, null=True)
     transaction_id = models.CharField(max_length=255, null=True, blank=True)
     status = models.PositiveSmallIntegerField(
