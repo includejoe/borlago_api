@@ -8,6 +8,7 @@ from .user_views import (
     location_detail_view,
     create_payment_method_view,
     payment_method_detail_view,
+    list_payment_methods_view,
 )
 
 app_name = "user"
@@ -39,9 +40,14 @@ urlpatterns = [
         name="create-payment-method",
     ),
     path(
-        "payment-method/detail/method_id/",
+        "payment-method/detail/<str:method_id>/",
         payment_method_detail_view,
         name="payment-method-detail",
+    ),
+    path(
+        "payment-method/all/",
+        list_payment_methods_view,
+        name="list-payment-methods",
     ),
     path(
         "password/change/",

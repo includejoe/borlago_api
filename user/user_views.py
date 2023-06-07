@@ -144,9 +144,44 @@ class CreatePaymentMethodAPIView(generics.CreateAPIView):
 create_payment_method_view = CreatePaymentMethodAPIView.as_view()
 
 
+class ListPaymentMethods(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.PaymentMethodSerializer
+
+    def list(self, request):
+        user = request.user
+        try:
+            payment_methods = PaymentMethod.objects.filter(user=user)
+            serializer = self.serializer_class(payment_methods, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException(detail=e)
+
+
+list_payment_methods_view = ListPaymentMethods.as_view()
+
+
 class PaymentMethodDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.PaymentMethodSerializer
+
+    def retrieve(self, request, method_id):
+        user = request.user
+        try:
+            method = PaymentMethod.objects.get(user=user, id=method_id)
+            serializer = self.serializer_class(method)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            APIException(detail=e)
+
+    def destroy(self, request, method_id):
+        user = request.user
+        try:
+            method = PaymentMethod.objects.get(user=user, id=method_id)
+            method.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            APIException(detail=e)
 
 
 payment_method_detail_view = PaymentMethodDetailAPIView.as_view()
