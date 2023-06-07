@@ -6,6 +6,12 @@ from datetime import timedelta
 env = environ.Env()
 environ.Env.read_env()
 
+# TODO: User create location
+# TODO: User get locations
+# TODO: payment model with fields; type("Mobile Money", "Bank Card"), name, user, created_at, number
+# TODO: User create payment methods
+# TODO: get user WCRs
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -17,8 +23,6 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
-# TODO: Create a separate app for collectors and users
 
 
 # Application definition

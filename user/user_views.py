@@ -5,10 +5,8 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.hashers import check_password
 
-from . import serializers
-from .models import User
-from waste.models import WasteCollectionRequest
-from base.utils.validate_collector import check_is_collector
+from . import user_serializers as serializers
+from .models import User, Location, PaymentMethod
 
 
 # Create your views here.
@@ -34,7 +32,7 @@ class UserDetailAPIView(generics.RetrieveUpdateAPIView):
         data = request.data
 
         try:
-            user_to_update = User.objects.get(id=email)
+            user_to_update = User.objects.get(email=email)
 
             if user.id != user_to_update.id:
                 return Response(
@@ -56,10 +54,102 @@ class UserDetailAPIView(generics.RetrieveUpdateAPIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
         except Exception as e:
+            print(e)
             raise APIException(detail=e)
 
 
 user_detail_view = UserDetailAPIView.as_view()
+
+
+class CreateLocationAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.LocationSerializer
+
+    def create(self, request):
+        user = request.user
+        data = request.data
+        data["user"] = user
+
+        try:
+            location = Location.objects.create(**data)
+            serializer = self.serializer_class(location)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            raise APIException(detail=e)
+
+
+create_location_view = CreateLocationAPIView.as_view()
+
+
+class ListLocationsAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.LocationSerializer
+
+    def list(self, request):
+        user = request.user
+        try:
+            locations = Location.objects.filter(user=user)
+            serializer = self.serializer_class(locations, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException(detail=e)
+
+
+list_locations_view = ListLocationsAPIView.as_view()
+
+
+class LocationDetailAPIView(generics.RetrieveDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.LocationSerializer
+
+    def retrieve(self, request, location_id):
+        user = request.user
+        try:
+            location = Location.objects.get(user=user, id=location_id)
+            serializer = self.serializer_class(location)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            APIException(detail=e)
+
+    def destroy(self, request, location_id):
+        user = request.user
+        try:
+            location = Location.objects.get(user=user, id=location_id)
+            location.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            APIException(detail=e)
+
+
+location_detail_view = LocationDetailAPIView.as_view()
+
+
+class CreatePaymentMethodAPIView(generics.CreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.PaymentMethodSerializer
+
+    def create(self, request):
+        user = request.user
+        data = request.data
+        data["user"] = user
+
+        try:
+            payment_method = PaymentMethod.objects.create(**data)
+            serializer = self.serializer_class(payment_method)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            raise APIException(detail=e)
+
+
+create_payment_method_view = CreatePaymentMethodAPIView.as_view()
+
+
+class PaymentMethodDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.PaymentMethodSerializer
+
+
+payment_method_detail_view = PaymentMethodDetailAPIView.as_view()
 
 
 class ChangePasswordAPIView(generics.UpdateAPIView):
@@ -111,47 +201,3 @@ class ForgottenPasswordAPIView(generics.UpdateAPIView):
 
 
 forgotten_password_view = ForgottenPasswordAPIView.as_view()
-
-
-class ConfirmWasteCollectionAPIView(generics.UpdateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = serializers.ConfirmWasteCollectionSerializer
-
-    def patch(self, request):
-        error_response = check_is_collector(request)
-
-        if error_response is not None:
-            return error_response
-
-        data = request.data
-        wcr_id = request.data["id"]
-
-        try:
-            wcr = WasteCollectionRequest.objects.get(id=wcr_id)
-
-            if wcr.status == 3:
-                return Response(
-                    {"detail": "This WCR has already been completed"},
-                    status=status.HTTP_404_NOT_FOUND,
-                )
-
-            serializer = self.serializer_class(
-                wcr,
-                data=data,
-                partial=True,
-                context={"request": request},
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except WasteCollectionRequest.DoesNotExist:
-            return Response(
-                {"detail": "This WCR does not exist"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-        except Exception as e:
-            raise APIException(detail=e)
-
-
-confirm_waste_collection_view = ConfirmWasteCollectionAPIView.as_view()
