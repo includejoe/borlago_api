@@ -45,7 +45,7 @@ class CreateWCRAPIView(generics.CreateAPIView):
             payment_amount = 3.56
 
             return Response(
-                {"wcr": wcr.id, "amount_to_pay": payment_amount},
+                {"amount_to_pay": payment_amount},
                 status=status.HTTP_201_CREATED,
             )
 

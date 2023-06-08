@@ -18,7 +18,7 @@ class WCRSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WasteCollectionRequest
-        exclude = ["id"]
+        exclude = ["id", "updated_at"]
 
         read_only_fields = [
             "created_at",

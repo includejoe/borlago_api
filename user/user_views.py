@@ -61,7 +61,7 @@ class UserDetailAPIView(generics.RetrieveUpdateAPIView):
 user_detail_view = UserDetailAPIView.as_view()
 
 
-class CreateLocationAPIView(generics.CreateAPIView):
+class AddLocationAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.LocationSerializer
 
@@ -78,7 +78,7 @@ class CreateLocationAPIView(generics.CreateAPIView):
             raise APIException(detail=e)
 
 
-create_location_view = CreateLocationAPIView.as_view()
+add_location_view = AddLocationAPIView.as_view()
 
 
 class ListLocationsAPIView(generics.ListAPIView):
@@ -98,18 +98,9 @@ class ListLocationsAPIView(generics.ListAPIView):
 list_locations_view = ListLocationsAPIView.as_view()
 
 
-class LocationDetailAPIView(generics.RetrieveDestroyAPIView):
+class DeleteLocationAPIView(generics.DestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.LocationSerializer
-
-    def retrieve(self, request, location_id):
-        user = request.user
-        try:
-            location = Location.objects.get(user=user, id=location_id)
-            serializer = self.serializer_class(location)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        except Exception as e:
-            APIException(detail=e)
 
     def destroy(self, request, location_id):
         user = request.user
@@ -121,7 +112,7 @@ class LocationDetailAPIView(generics.RetrieveDestroyAPIView):
             APIException(detail=e)
 
 
-location_detail_view = LocationDetailAPIView.as_view()
+delete_location_view = DeleteLocationAPIView.as_view()
 
 
 class CreatePaymentMethodAPIView(generics.CreateAPIView):

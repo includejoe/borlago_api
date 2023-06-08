@@ -42,7 +42,7 @@ class Location(admin.ModelAdmin):
         "id",
         "longitude",
         "latitude",
-        "address",
+        "name",
         "created_at",
     )
 

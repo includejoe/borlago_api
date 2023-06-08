@@ -3,9 +3,9 @@ from .user_views import (
     user_detail_view,
     change_password_view,
     forgotten_password_view,
-    create_location_view,
+    add_location_view,
     list_locations_view,
-    location_detail_view,
+    delete_location_view,
     create_payment_method_view,
     payment_method_detail_view,
     list_payment_methods_view,
@@ -20,8 +20,8 @@ urlpatterns = [
         name="user-detail",
     ),
     path(
-        "location/create/",
-        create_location_view,
+        "location/add/",
+        add_location_view,
         name="create-location",
     ),
     path(
@@ -30,9 +30,9 @@ urlpatterns = [
         name="list-locations",
     ),
     path(
-        "location/detail/<str:location_id>/",
-        location_detail_view,
-        name="location-detail",
+        "location/delete/<str:location_id>/",
+        delete_location_view,
+        name="delete-location",
     ),
     path(
         "payment-method/create/",
