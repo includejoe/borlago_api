@@ -5,12 +5,14 @@ from .views import (
     make_wcr_payment_view,
     list_user_wcrs_view,
     wcr_detail_view,
+    cancel_wcr_view,
 )
 
 app_name = "waste"
 
 urlpatterns = [
     path("create/", create_wcr_view, name="create-wcr"),
+    path("cancel/<str:wcr_id>/", cancel_wcr_view, name="cancel-wcr"),
     path("user/all/", list_user_wcrs_view, name="user-wcrs"),
     path("detail/<str:wcr_id>/", wcr_detail_view, name="wcr-detail"),
     path("payment/", make_wcr_payment_view, name="make-wcr-payment"),

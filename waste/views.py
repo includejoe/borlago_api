@@ -36,16 +36,18 @@ class CreateWCRAPIView(generics.CreateAPIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            data["pick_up_location"] = pick_up_location
-            wcr = WasteCollectionRequest.objects.create(**data)
-
             """ google cloud vision algorithm to identify contents of waste 
                 in the waste photo and write out the price for waste is implemented
             """
-            payment_amount = 3.56
+            amount_to_pay = 3.56
+
+            data["pick_up_location"] = pick_up_location
+            data["price"] = amount_to_pay
+            wcr = WasteCollectionRequest.objects.create(**data)
+            serializer = self.serializer_class(wcr)
 
             return Response(
-                {"amount_to_pay": payment_amount},
+                serializer.data,
                 status=status.HTTP_201_CREATED,
             )
 
@@ -73,7 +75,7 @@ class ListUserWCRsAPIView(generics.ListAPIView):
 list_user_wcrs_view = ListUserWCRsAPIView.as_view()
 
 
-class WCRDetailAPIView(generics.RetrieveAPIView):
+class WCRDetailAPIView(generics.RetrieveDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.WCRSerializer
 
@@ -86,8 +88,51 @@ class WCRDetailAPIView(generics.RetrieveAPIView):
         except Exception as e:
             APIException(detail=e)
 
+    def destroy(self, request, wcr_id):
+        user = request.user
+        try:
+            wcr = WasteCollectionRequest.objects.get(user=user, id=wcr_id)
+            if wcr.status > 1:
+                return Response(
+                    {"detail": "A WCR with status greater than 1 cannot be deleted"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+            wcr.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            APIException(detail=e)
+
 
 wcr_detail_view = WCRDetailAPIView.as_view()
+
+
+class CancelWCRAPIView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.WCRSerializer
+
+    def patch(self, request, wcr_id):
+        user = request.user
+        try:
+            wcr = WasteCollectionRequest.objects.get(user=user, id=wcr_id)
+            if wcr.status == 2:
+                WasteCollectionRequest.objects.filter(user=user, id=wcr_id).update(
+                    status=4
+                )
+                canceled_wcr = WasteCollectionRequest.objects.get(user=user, id=wcr_id)
+                serializer = self.serializer_class(canceled_wcr)
+                """ Implement algorithm to reverse user money """
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                return Response(
+                    {"detail": "A WCR that is not 'In Progress' can not be canceled"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        except Exception as e:
+            print(e)
+            APIException(detail=e)
+
+
+cancel_wcr_view = CancelWCRAPIView.as_view()
 
 
 class MakeWCRPaymentAPIView(generics.CreateAPIView):

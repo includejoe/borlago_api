@@ -9,6 +9,7 @@ class WasteCollectionRequest(admin.ModelAdmin):
         "public_id",
         "waste_type",
         "waste_desc",
+        "price",
         "collection_datetime",
         "status",
     )
