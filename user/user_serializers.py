@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
-from .models import User
-from waste.models import WasteCollectionRequest
+from .models import User, Location, PaymentMethod
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,6 +23,22 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "user_type", "email", "created_at"]
 
 
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        exclude = ["user", "created_at", "updated_at"]
+
+        read_only_fields = ["id", "created_at"]
+
+
+class PaymentMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethod
+        exclude = ["user", "created_at"]
+
+        read_only_fields = ["id", "created_at"]
+
+
 class PasswordSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=128, min_length=8, write_only=True)
 
@@ -43,9 +58,3 @@ class PasswordSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
-
-
-class ConfirmWasteCollectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = WasteCollectionRequest
-        fields = ["id", "status", "collection_datetime"]

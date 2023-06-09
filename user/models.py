@@ -21,6 +21,7 @@ class UserManager(BaseUserManager):
         last_name,
         email,
         gender,
+        country,
         phone,
         user_type=2,
         password=None,
@@ -34,6 +35,7 @@ class UserManager(BaseUserManager):
         user.first_name = first_name
         user.last_name = last_name
         user.gender = gender
+        user.country = country
         user.phone = phone
         user.user_type = user_type
         user.set_password(password)
@@ -43,12 +45,15 @@ class UserManager(BaseUserManager):
 
         return user
 
-    def create_superuser(self, first_name, last_name, email, gender, phone, password):
+    def create_superuser(
+        self, first_name, last_name, email, gender, country, phone, password
+    ):
         user = self.create_user(
             first_name=first_name,
             last_name=last_name,
             email=email,
             gender=gender,
+            country=country,
             phone=phone,
             password=password,
             user_type=1,
@@ -63,7 +68,7 @@ class UserManager(BaseUserManager):
 
 # Create your models here.
 class User(AbstractBaseUser, PermissionsMixin):
-    GENDER_CHOICES = (("Male", "Male"), ("Female", "Female"), ("Other", "Other"))
+    COUNTRY_CHOICES = ((country, country) for country in country_codes.keys())
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     email = models.EmailField(max_length=255, unique=True)
@@ -72,7 +77,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=128)
     phone = models.CharField(max_length=128, default="233")
     momo_number = models.CharField(max_length=128, null=True, blank=True)
-    gender = models.CharField(max_length=56, default="Other", choices=GENDER_CHOICES)
+    gender = models.CharField(max_length=12, default="Other")
+    country = models.CharField(max_length=64, default="Ghana", choices=COUNTRY_CHOICES)
     is_staff = models.BooleanField(default=False)
     user_type = models.PositiveSmallIntegerField(
         default=2,
@@ -251,12 +257,50 @@ class CollectorUnit(models.Model):
 class Location(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="locations")
-    picture = models.URLField(blank=False, null=False)
-    address = models.CharField(max_length=1024, null=False, blank=False)
+    name = models.CharField(max_length=1024, null=False, blank=False)
     latitude = models.DecimalField(max_digits=9, decimal_places=6)
     longitude = models.DecimalField(max_digits=9, decimal_places=6)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class PaymentMethod(models.Model):
+    PAYMENT_METHODS = (("Mobile Money", "Mobile Money"), ("Bank Card", "Bank Card"))
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    type = models.CharField(
+        max_length=24, choices=PAYMENT_METHODS, null=False, blank=False
+    )
+    name = models.CharField(max_length=128, null=False, blank=False)
+    account_number = models.CharField(max_length=128, null=False, blank=False)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name="payment_methods",
+    )
+
+    # Bank Card Details
+    expiry_date = models.CharField(max_length=5, null=True, blank=True)
+    name_on_card = models.CharField(max_length=128, null=True, blank=True)
+    security_code = models.CharField(max_length=3, null=True, blank=True)
+    zip_code = models.CharField(max_length=10, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if self.type == "Bank Card":
+            if not self.expiry_date:
+                raise ValidationError({"expiry_date": "This field is required"})
+            if not self.name_on_card:
+                raise ValidationError({"name_on_card": "This field is required"})
+            if not self.security_code:
+                raise ValidationError({"security_code": "This field is required"})
+            if not self.zip_code:
+                raise ValidationError({"zip_code": "This field is required"})
+        return super().clean()
 
     class Meta:
         ordering = ["-created_at"]

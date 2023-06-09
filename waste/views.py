@@ -9,7 +9,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import APIException, ParseError
 from geopy.distance import distance as geopy_distance
 
-
 from . import serializers
 from .models import WasteCollectionRequest, Payment
 from user.models import Location, CollectorUnit
@@ -25,13 +24,19 @@ class CreateWCRAPIView(generics.CreateAPIView):
 
     def create(self, request):
         data = request.data
-        data["requester"] = request.user
+        data["user"] = request.user
 
         try:
             pick_up_location = data.get("pick_up_location")
             pick_up_location = Location.objects.get(id=pick_up_location)
-            data["pick_up_location"] = pick_up_location
 
+            if pick_up_location.user != request.user:
+                return Response(
+                    {"detail": "This user does not own this pick_up_location"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            data["pick_up_location"] = pick_up_location
             wcr = WasteCollectionRequest.objects.create(**data)
 
             """ google cloud vision algorithm to identify contents of waste 
@@ -40,7 +45,7 @@ class CreateWCRAPIView(generics.CreateAPIView):
             payment_amount = 3.56
 
             return Response(
-                {"wcr": wcr.id, "amount_to_pay": payment_amount},
+                {"amount_to_pay": payment_amount},
                 status=status.HTTP_201_CREATED,
             )
 
@@ -49,6 +54,40 @@ class CreateWCRAPIView(generics.CreateAPIView):
 
 
 create_wcr_view = CreateWCRAPIView.as_view()
+
+
+class ListUserWCRsAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.WCRSerializer
+
+    def list(self, request):
+        user = request.user
+        try:
+            wcrs = WasteCollectionRequest.objects.filter(user=user)
+            serializer = self.serializer_class(wcrs, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException(detail=e)
+
+
+list_user_wcrs_view = ListUserWCRsAPIView.as_view()
+
+
+class WCRDetailAPIView(generics.RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.WCRSerializer
+
+    def retrieve(self, request, wcr_id):
+        user = request.user
+        try:
+            wcr = WasteCollectionRequest.objects.get(user=user, id=wcr_id)
+            serializer = self.serializer_class(wcr)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            APIException(detail=e)
+
+
+wcr_detail_view = WCRDetailAPIView.as_view()
 
 
 class MakeWCRPaymentAPIView(generics.CreateAPIView):

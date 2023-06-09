@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.utils import timezone
 
 from .models import WasteCollectionRequest, Payment
 
@@ -12,12 +11,16 @@ class PaymentSerializer(serializers.ModelSerializer):
 
 
 class WCRSerializer(serializers.ModelSerializer):
+    pick_up_location = serializers.SerializerMethodField()
+
+    def get_pick_up_location(self, obj):
+        return obj.pick_up_location.address
+
     class Meta:
         model = WasteCollectionRequest
-        fields = "__all__"
+        exclude = ["id", "updated_at"]
 
         read_only_fields = [
-            "id",
             "created_at",
             "payment",
             "collector_unit",

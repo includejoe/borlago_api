@@ -6,6 +6,8 @@ from datetime import timedelta
 env = environ.Env()
 environ.Env.read_env()
 
+# TODO: encrypt all payment methods account numbers in the database
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -17,8 +19,6 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
-
-# TODO: Create a separate app for collectors and users
 
 
 # Application definition
