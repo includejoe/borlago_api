@@ -52,7 +52,7 @@ admin.site.register(models.Location, Location)
 
 class PaymentMethod(admin.ModelAdmin):
     list_display = (
-        "number",
+        "account_number",
         "type",
         "name",
         "created_at",

@@ -115,7 +115,7 @@ class DeleteLocationAPIView(generics.DestroyAPIView):
 delete_location_view = DeleteLocationAPIView.as_view()
 
 
-class CreatePaymentMethodAPIView(generics.CreateAPIView):
+class AddPaymentMethodAPIView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.PaymentMethodSerializer
 
@@ -132,7 +132,7 @@ class CreatePaymentMethodAPIView(generics.CreateAPIView):
             raise APIException(detail=e)
 
 
-create_payment_method_view = CreatePaymentMethodAPIView.as_view()
+add_payment_method_view = AddPaymentMethodAPIView.as_view()
 
 
 class ListPaymentMethods(generics.ListAPIView):
@@ -161,6 +161,17 @@ class PaymentMethodDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         try:
             method = PaymentMethod.objects.get(user=user, id=method_id)
             serializer = self.serializer_class(method)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            APIException(detail=e)
+
+    def patch(self, request, method_id):
+        user = request.user
+        try:
+            method = PaymentMethod.objects.get(user=user, id=method_id)
+            serializer = self.serializer_class(method, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         except Exception as e:
             APIException(detail=e)

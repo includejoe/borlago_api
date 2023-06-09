@@ -6,7 +6,7 @@ from .user_views import (
     add_location_view,
     list_locations_view,
     delete_location_view,
-    create_payment_method_view,
+    add_payment_method_view,
     payment_method_detail_view,
     list_payment_methods_view,
 )
@@ -35,9 +35,9 @@ urlpatterns = [
         name="delete-location",
     ),
     path(
-        "payment-method/create/",
-        create_payment_method_view,
-        name="create-payment-method",
+        "payment-method/add/",
+        add_payment_method_view,
+        name="add-payment-method",
     ),
     path(
         "payment-method/detail/<str:method_id>/",

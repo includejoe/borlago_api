@@ -275,13 +275,32 @@ class PaymentMethod(models.Model):
         max_length=24, choices=PAYMENT_METHODS, null=False, blank=False
     )
     name = models.CharField(max_length=128, null=False, blank=False)
-    number = models.CharField(max_length=128, null=False, blank=False)
+    account_number = models.CharField(max_length=128, null=False, blank=False)
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="payment_methods",
     )
+
+    # Bank Card Details
+    expiry_date = models.CharField(max_length=5, null=True, blank=True)
+    name_on_card = models.CharField(max_length=128, null=True, blank=True)
+    security_code = models.CharField(max_length=3, null=True, blank=True)
+    zip_code = models.CharField(max_length=10, null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def clean(self) -> None:
+        if self.type == "Bank Card":
+            if not self.expiry_date:
+                raise ValidationError({"expiry_date": "This field is required"})
+            if not self.name_on_card:
+                raise ValidationError({"name_on_card": "This field is required"})
+            if not self.security_code:
+                raise ValidationError({"security_code": "This field is required"})
+            if not self.zip_code:
+                raise ValidationError({"zip_code": "This field is required"})
+        return super().clean()
 
     class Meta:
         ordering = ["-created_at"]
