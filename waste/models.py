@@ -25,6 +25,9 @@ class WasteCollectionRequest(models.Model):
         on_delete=models.CASCADE,
         related_name="wcrs",
     )
+    price = models.DecimalField(
+        max_digits=15, decimal_places=2, null=False, blank=False
+    )
     waste_type = models.CharField(max_length=128, choices=WASTE_TYPE)
     waste_desc = models.TextField(blank=True, null=True)
     waste_photo = models.URLField(null=False, blank=False)

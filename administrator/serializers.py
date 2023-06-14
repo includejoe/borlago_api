@@ -1,4 +1,4 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, SerializerMethodField
 
 from user.models import User, CollectorUnit, Location
 from waste.models import WasteCollectionRequest
@@ -73,14 +73,11 @@ class CollectorUnitDetailSerializer(ModelSerializer):
         read_only_fields = ["id", "created_at", "name", "collectors"]
 
 
-class LocationSerializer(ModelSerializer):
-    class Meta:
-        model = Location
-        fields = ["address"]
-
-
 class WasteCollectionRequestSerializer(ModelSerializer):
-    pick_up_location = LocationSerializer(many=False)
+    pick_up_location = SerializerMethodField()
+
+    def get_pick_up_location(self, obj):
+        return obj.pick_up_location.name
 
     class Meta:
         model = WasteCollectionRequest

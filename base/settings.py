@@ -35,6 +35,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "channels",
     "corsheaders",
+    "django_celery_beat",
+    "django_celery_results",
     # Local
     "administrator",
     "authentication",
@@ -172,3 +174,24 @@ CHANNEL_LAYERS = {
         "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
     }
 }
+
+# Celery Configurations
+CELERY_BROKER_URL = env("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = env("CELERY_BROKER_URL")
+CELERY_CACHE_BACKEND = "default"
+CELERY_BEAT_SCHEDULE = {}
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+        "LOCATION": "cachedb",
+    }
+}
+
+# Email Configurations
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST_USER = env("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
