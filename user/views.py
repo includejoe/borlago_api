@@ -7,6 +7,8 @@ from rest_framework.exceptions import APIException
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import check_password
 
+from base.utils.validate_collector import check_is_collector
+from waste.models import WasteCollectionRequest
 from .celery_tasks import send_reset_password_email_task
 from . import serializers
 from .models import User, Location, PaymentMethod
@@ -255,9 +257,6 @@ class PaymentMethodDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 payment_method_detail_view = PaymentMethodDetailAPIView.as_view()
 
-from waste.models import WasteCollectionRequest
-from base.utils.validate_collector import check_is_collector
-
 
 class ConfirmWasteCollectionAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
@@ -305,7 +304,6 @@ confirm_waste_collection_view = ConfirmWasteCollectionAPIView.as_view()
 
 class ChangePasswordAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = serializers.PasswordSerializer
 
     def patch(self, request):
         user = request.user
@@ -314,21 +312,18 @@ class ChangePasswordAPIView(generics.UpdateAPIView):
         new_password = request.data.get("new_password", None)
 
         try:
+            # check if new password is same as old password
             if check_password(new_password, user.password):
                 return Response(
                     {"detail": "New password can not be same as current password"},
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
+            # check if current password is correct
             if check_password(current_password, user.password):
-                serializer = self.serializer_class(
-                    user,
-                    data={"password": new_password},
-                    partial=True,
-                    context={"request": request},
-                )
-                serializer.is_valid(raise_exception=True)
-                serializer.save()
+                # Update user password
+                user.set_password(new_password)
+                user.save()
 
                 return Response(
                     {"detail": "Password changed successfully"},
@@ -355,7 +350,7 @@ class ForgotPasswordAPIView(generics.CreateAPIView):
         if email is None:
             return Response(
                 {"detail": "Email can not be null"},
-                status=status.HTTP_406_NOT_ACCEPTABLE,
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         try:
@@ -370,12 +365,51 @@ class ForgotPasswordAPIView(generics.CreateAPIView):
             send_reset_password_email_task.delay(user.email, user.forgot_password_code)
             return Response(status=status.HTTP_200_OK)
         except Exception as e:
-            APIException(detail=e)
+            return APIException(detail=e)
 
 
 forgot_password_view = ForgotPasswordAPIView.as_view()
 
 
 class ResetPasswordAPIView(generics.UpdateAPIView):
-    permission_classes = [IsAuthenticated]
-    serializer_class = serializers.PasswordSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request):
+        reset_code = request.data.get("reset_code", None)
+        new_password = request.data.get("new_password", None)
+
+        if reset_code is None or new_password is None:
+            return Response(
+                {"detail": "reset_code or new_password can not be null"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            user = User.objects.get(forgot_password_code=reset_code)
+            if user.forgot_password_code_expires_at >= timezone.now():
+                # check if new password is same as old password
+                if check_password(new_password, user.password):
+                    return Response(
+                        {"detail": "New password can not be same as current password"},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
+                # Update user password
+                user.set_password(new_password)
+                user.save()
+
+                # clear forgot_password_code and code expiration time
+                user.forgot_password_code = None
+                user.forgot_password_code_expires_at = None
+                user.save()
+
+                return Response(status=status.HTTP_200_OK)
+
+            return Response(
+                {"detail": "This reset code has expired"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            return APIException(detail=e)
+
+
+reset_password_view = ResetPasswordAPIView.as_view()
