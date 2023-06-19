@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     "django_celery_results",
     # Local
     "administrator",
-    "authentication",
     "chat",
     "user",
     "waste",
@@ -194,4 +193,3 @@ EMAIL_HOST_USER = env("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
