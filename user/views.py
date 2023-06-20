@@ -384,7 +384,7 @@ class ResetPasswordAPIView(generics.UpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            user = User.objects.get(forgot_password_code=reset_code)
+            user = User.objects.filter(forgot_password_code=reset_code).first()
             if user.forgot_password_code_expires_at >= timezone.now():
                 # check if new password is same as old password
                 if check_password(new_password, user.password):
