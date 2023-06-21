@@ -325,10 +325,7 @@ class ChangePasswordAPIView(generics.UpdateAPIView):
                 user.set_password(new_password)
                 user.save()
 
-                return Response(
-                    {"detail": "Password changed successfully"},
-                    status=status.HTTP_200_OK,
-                )
+                return Response(status=status.HTTP_200_OK)
             else:
                 return Response(
                     {"detail": "Current password is incorrect"},
@@ -374,7 +371,8 @@ forgot_password_view = ForgotPasswordAPIView.as_view()
 class ResetPasswordAPIView(generics.UpdateAPIView):
     permission_classes = [AllowAny]
 
-    def create(self, request):
+    def patch(self, request):
+        email = request.data.get("email", None)
         reset_code = request.data.get("reset_code", None)
         new_password = request.data.get("new_password", None)
 
@@ -384,8 +382,11 @@ class ResetPasswordAPIView(generics.UpdateAPIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            user = User.objects.filter(forgot_password_code=reset_code).first()
-            if user.forgot_password_code_expires_at >= timezone.now():
+            user = User.objects.get(email=email)
+            if (
+                reset_code == user.forgot_password_code
+                and user.forgot_password_code_expires_at >= timezone.now()
+            ):
                 # check if new password is same as old password
                 if check_password(new_password, user.password):
                     return Response(
@@ -405,7 +406,12 @@ class ResetPasswordAPIView(generics.UpdateAPIView):
                 return Response(status=status.HTTP_200_OK)
 
             return Response(
-                {"detail": "This reset code has expired"},
+                {"detail": "This reset code is invalid"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except User.DoesNotExist:
+            return Response(
+                {"detail": "This user does not exist"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception as e:
