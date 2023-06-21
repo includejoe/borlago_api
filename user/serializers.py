@@ -1,8 +1,9 @@
-from django.contrib.auth import authenticate
 from rest_framework import serializers
+from django.contrib.auth import authenticate
 
-from user.models import User
 from base.utils.validate_email import is_email_valid
+from waste.models import WasteCollectionRequest
+from .models import User, Location, PaymentMethod
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -102,3 +103,47 @@ class LoginSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("This user account has been deleted")
 
         return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        exclude = [
+            "is_superuser",
+            "last_login",
+            "password",
+            "forgot_password_code",
+            "forgot_password_code_expires_at",
+            "is_staff",
+            "is_deleted",
+            "is_verified",
+            "is_suspended",
+            "updated_at",
+            "collector_unit",
+            "groups",
+            "user_permissions",
+        ]
+
+        read_only_fields = ["id", "user_type", "email", "created_at"]
+
+
+class LocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        exclude = ["user", "created_at", "updated_at"]
+
+        read_only_fields = ["id", "created_at"]
+
+
+class PaymentMethodSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PaymentMethod
+        exclude = ["user", "created_at"]
+
+        read_only_fields = ["id", "created_at"]
+
+
+class ConfirmWasteCollectionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WasteCollectionRequest
+        fields = ["id", "status", "collection_datetime"]

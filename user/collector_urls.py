@@ -1,5 +1,5 @@
 from django.urls import path
-from .collector_views import confirm_waste_collection_view
+from .views import confirm_waste_collection_view
 
 app_name = "collector"
 

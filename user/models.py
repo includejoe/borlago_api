@@ -88,6 +88,8 @@ class User(AbstractBaseUser, PermissionsMixin):
         ],
     )  # 1 -> Admin, 2 -> Normal User, 3 -> Collector
     is_deleted = models.BooleanField(default=False)
+    forgot_password_code = models.CharField(max_length=6, null=True, blank=True)
+    forgot_password_code_expires_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

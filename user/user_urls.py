@@ -1,8 +1,8 @@
 from django.urls import path
-from .user_views import (
+from .views import (
     user_detail_view,
     change_password_view,
-    forgotten_password_view,
+    forgot_password_view,
     add_location_view,
     list_locations_view,
     delete_location_view,
@@ -56,7 +56,7 @@ urlpatterns = [
     ),
     path(
         "password/forgot/",
-        forgotten_password_view,
+        forgot_password_view,
         name="forgot-password",
     ),
 ]
