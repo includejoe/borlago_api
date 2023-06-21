@@ -9,36 +9,21 @@ from .views import (
     add_payment_method_view,
     payment_method_detail_view,
     list_payment_methods_view,
+    list_payment_history,
 )
 
 app_name = "user"
 
 urlpatterns = [
-    path(
-        "detail/<str:email>/",
-        user_detail_view,
-        name="user-detail",
-    ),
-    path(
-        "location/add/",
-        add_location_view,
-        name="create-location",
-    ),
-    path(
-        "location/all/",
-        list_locations_view,
-        name="list-locations",
-    ),
+    path("detail/<str:email>/", user_detail_view, name="user-detail"),
+    path("location/add/", add_location_view, name="create-location"),
+    path("location/all/", list_locations_view, name="list-locations"),
     path(
         "location/delete/<str:location_id>/",
         delete_location_view,
         name="delete-location",
     ),
-    path(
-        "payment-method/add/",
-        add_payment_method_view,
-        name="add-payment-method",
-    ),
+    path("payment-method/add/", add_payment_method_view, name="add-payment-method"),
     path(
         "payment-method/detail/<str:method_id>/",
         payment_method_detail_view,
@@ -49,14 +34,7 @@ urlpatterns = [
         list_payment_methods_view,
         name="list-payment-methods",
     ),
-    path(
-        "password/change/",
-        change_password_view,
-        name="change-password",
-    ),
-    path(
-        "password/forgot/",
-        forgot_password_view,
-        name="forgot-password",
-    ),
+    path("payment/history/", list_payment_history, name="payment-history"),
+    path("password/change/", change_password_view, name="change-password"),
+    path("password/forgot/", forgot_password_view, name="forgot-password"),
 ]

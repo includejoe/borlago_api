@@ -91,16 +91,15 @@ class Payment(models.Model):
         blank=True,
         related_name="used_on_payments",
     )
-    account_no = models.CharField(max_length=255, null=False, blank=False)
-    amount = models.DecimalField(max_digits=15, decimal_places=2, null=True)
+    amount = models.DecimalField(max_digits=15, decimal_places=2)
     transaction_id = models.CharField(max_length=255, null=True, blank=True)
     status = models.PositiveSmallIntegerField(
         default=1,
         validators=[
             MinValueValidator(1),
-            MaxValueValidator(3),
+            MaxValueValidator(2),
         ],
-    )  # 1 -> Pending, 2 -> Paid, 3 -> Canceled
+    )  # 1 -> Completed, 2 -> Canceled
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):

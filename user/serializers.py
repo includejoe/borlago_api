@@ -2,7 +2,7 @@ from rest_framework import serializers
 from django.contrib.auth import authenticate
 
 from base.utils.validate_email import is_email_valid
-from waste.models import WasteCollectionRequest
+from waste.models import WasteCollectionRequest, Payment
 from .models import User, Location, PaymentMethod
 
 
@@ -141,6 +141,26 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
         exclude = ["user", "created_at"]
 
         read_only_fields = ["id", "created_at"]
+
+
+class PaymentsSerializer(serializers.ModelSerializer):
+    wcr = serializers.SerializerMethodField()
+    method = serializers.SerializerMethodField()
+
+    def get_wcr(self, obj):
+        wcr = WasteCollectionRequest.objects.get(id=obj.wcr.id)
+        return wcr.public_id
+
+    def get_method(self, obj):
+        method = PaymentMethod.objects.get(id=obj.method.id)
+        return {
+            "name": method.name,
+            "account_number": method.account_number,
+        }
+
+    class Meta:
+        model = Payment
+        exclude = ["user"]
 
 
 class ConfirmWasteCollectionSerializer(serializers.ModelSerializer):

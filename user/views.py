@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.contrib.auth.hashers import check_password
 
 from base.utils.validate_collector import check_is_collector
-from waste.models import WasteCollectionRequest
+from waste.models import WasteCollectionRequest, Payment
 from .celery_tasks import send_reset_password_email_task
 from . import serializers
 from .models import User, Location, PaymentMethod
@@ -258,6 +258,23 @@ class PaymentMethodDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 payment_method_detail_view = PaymentMethodDetailAPIView.as_view()
 
 
+class ListPaymentHistoryAPIView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = serializers.PaymentsSerializer
+
+    def list(self, request):
+        user = request.user
+        try:
+            payments = Payment.objects.filter(user=user)
+            serializer = self.serializer_class(payments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Exception as e:
+            raise APIException(detail=e)
+
+
+list_payment_history = ListPaymentHistoryAPIView.as_view()
+
+
 class ConfirmWasteCollectionAPIView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = serializers.ConfirmWasteCollectionSerializer
@@ -307,7 +324,6 @@ class ChangePasswordAPIView(generics.UpdateAPIView):
 
     def patch(self, request):
         user = request.user
-
         current_password = request.data.get("current_password", None)
         new_password = request.data.get("new_password", None)
 
